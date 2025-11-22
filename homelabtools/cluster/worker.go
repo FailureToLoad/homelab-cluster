@@ -47,6 +47,8 @@ cluster:
     endpoint: https://{{.ControlPlaneAddress}}:6443
   clusterName: {{.ClusterName}}
   network:
+    cni:
+      name: none
     dnsDomain: cluster.local
     podSubnets:
       - 10.244.0.0/16
@@ -56,6 +58,8 @@ cluster:
   ca:
     crt: "{{.K8SCert}}"
     key: ""
+  proxy:
+    disabled: true
   discovery:
     enabled: true
     registries:

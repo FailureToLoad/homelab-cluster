@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
+	"github.com/failuretoload/homelabtools/local"
 	"github.com/siderolabs/talos/pkg/machinery/config"
 	"github.com/siderolabs/talos/pkg/machinery/config/generate/secrets"
 	"github.com/siderolabs/talos/pkg/machinery/role"
@@ -132,6 +133,148 @@ func (c *Client) GetClusterSecretsWithOverwrite(overwrite bool) (*ClusterSecrets
 	}
 
 	return &clusterSecrets, nil
+}
+
+func (c *Client) GetCiliumSecrets() (*CiliumSecrets, error) {
+	secretJSON, err := c.getSecret("cilium")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cilium secret: %w", err)
+	}
+
+	if secretJSON == "" {
+		caCert, caKey, err := generateCACert("Cilium CA")
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate cilium CA: %w", err)
+		}
+
+		ciliumSecrets := &CiliumSecrets{
+			CiliumCACRT: caCert,
+			CiliumCAKey: caKey,
+		}
+
+		secretData, err := json.Marshal(ciliumSecrets)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal cilium secrets: %w", err)
+		}
+
+		if err := c.setSecret("cilium", string(secretData)); err != nil {
+			return nil, fmt.Errorf("failed to store cilium secret: %w", err)
+		}
+
+		return ciliumSecrets, nil
+	}
+
+	var ciliumSecrets CiliumSecrets
+	if err := json.Unmarshal([]byte(secretJSON), &ciliumSecrets); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal cilium secret: %w", err)
+	}
+
+	return &ciliumSecrets, nil
+}
+
+func (c *Client) GetHubbleSecrets() (*HubbleSecrets, error) {
+	secretJSON, err := c.getSecret("hubble")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get hubble secret: %w", err)
+	}
+
+	if secretJSON == "" {
+		ciliumSecrets, err := c.GetCiliumSecrets()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get cilium secrets for hubble cert generation: %w", err)
+		}
+
+		tlsCert, tlsKey, err := generateTLSCert(ciliumSecrets.CiliumCACRT, ciliumSecrets.CiliumCAKey, "*.hubble-grpc.cilium.io")
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate hubble TLS cert: %w", err)
+		}
+
+		hubbleSecrets := &HubbleSecrets{
+			HubbleTLSCRT: tlsCert,
+			HubbleTLSKey: tlsKey,
+		}
+
+		secretData, err := json.Marshal(hubbleSecrets)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal hubble secrets: %w", err)
+		}
+
+		if err := c.setSecret("hubble", string(secretData)); err != nil {
+			return nil, fmt.Errorf("failed to store hubble secret: %w", err)
+		}
+
+		return hubbleSecrets, nil
+	}
+
+	var hubbleSecrets HubbleSecrets
+	if err := json.Unmarshal([]byte(secretJSON), &hubbleSecrets); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal hubble secret: %w", err)
+	}
+
+	return &hubbleSecrets, nil
+}
+
+func (c *Client) GetExternalSecretPrincipal() (*ExternalSecretPrincipal, error) {
+	secretJSON, err := c.getSecret("external-secret-principal")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get external-secret-principal: %w", err)
+	}
+
+	if secretJSON != "" {
+		var esp ExternalSecretPrincipal
+		if err := json.Unmarshal([]byte(secretJSON), &esp); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal external-secret-principal: %w", err)
+		}
+		return &esp, nil
+	}
+
+	esp, err := c.getExternalSecretPrincipalFromKeyring()
+	if err != nil {
+		return nil, err
+	}
+
+	secretData, err := json.Marshal(esp)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal external-secret-principal: %w", err)
+	}
+
+	if err := c.setSecret("external-secret-principal", string(secretData)); err != nil {
+		return nil, fmt.Errorf("failed to store external-secret-principal in vault: %w", err)
+	}
+
+	return esp, nil
+}
+
+func (c *Client) getExternalSecretPrincipalFromKeyring() (*ExternalSecretPrincipal, error) {
+	clientID, err := local.GetClientID()
+	if err != nil {
+		return nil, err
+	}
+	if clientID == "" {
+		return nil, fmt.Errorf("client id not found in keyring")
+	}
+
+	tenantID, err := local.GetTenantID()
+	if err != nil {
+		return nil, err
+	}
+	if tenantID == "" {
+		return nil, fmt.Errorf("tenant id not found in keyring")
+	}
+
+	clientSecret, err := local.GetClientSecret()
+	if err != nil {
+		return nil, err
+	}
+	if clientSecret == "" {
+		return nil, fmt.Errorf("client secret not found in keyring")
+	}
+
+	return &ExternalSecretPrincipal{
+		ClientID:     clientID,
+		TenantID:     tenantID,
+		ClientSecret: clientSecret,
+	}, nil
 }
 
 func (c *Client) setSecret(name, value string) error {

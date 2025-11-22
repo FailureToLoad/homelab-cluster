@@ -46,6 +46,8 @@ cluster:
     endpoint: https://{{.Address}}:6443
   clusterName: {{.ClusterName}}
   network:
+    cni:
+      name: none
     dnsDomain: cluster.local
     podSubnets:
       - 10.244.0.0/16
@@ -90,6 +92,8 @@ cluster:
         - level: Metadata
   controllerManager:
     image: registry.k8s.io/kube-controller-manager:v1.30.0
+  proxy:
+    disabled: true
   scheduler:
     image: registry.k8s.io/kube-scheduler:v1.30.0
   discovery:

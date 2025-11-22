@@ -106,9 +106,56 @@ talosctl apply-config \
   --insecure
 ```
 
+### Updating
+
+Run this command on each node to update with new config values.
+
+```bash
+cd ~/.talos
+talosctl apply-config \
+  --nodes "NODE_IP" \
+  --endpoints "NODE_IP \
+  --file "./CONFIG_FILE_NAME.YAML" \
+```
+
 Then bootstrap the cluster and generate the kube config.  
 
 ```bash
 talosctl bootstrap --nodes "CONTROL_PLANE_IP"
 talosctl kubeconfig --nodes "CONTROL_PLANE_IP"
 ```
+
+## Replace flannel and kube-proxy with cilium
+
+After the cluster is running with default CNI (flannel) and kube-proxy, deploy core components:
+
+```bash
+bash scripts/bootstrap.sh
+```
+
+This will deploy in order:
+
+1. External Secrets CRDs
+2. Namespaces
+3. Bootstrap secrets (fetched from Azure Key Vault)
+4. Cilium CNI with kube-proxy replacement
+
+Wait for Cilium pods to be ready:
+
+```bash
+kubectl get pods -n core-cilium -o wide
+```
+
+Once all Cilium pods are Running (1/1), remove the default CNI and kube-proxy:
+
+```bash
+kubectl -n kube-system delete ds kube-flannel kube-proxy
+```
+
+Verify the cluster is healthy:
+
+```bash
+kubectl get nodes
+```
+
+All nodes should remain Ready with Cilium now handling CNI and service proxying.
