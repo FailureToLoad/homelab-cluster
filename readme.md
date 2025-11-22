@@ -82,3 +82,33 @@ This will check for and create any missing resources:
 
 If the Key Vault name is already taken globally, you'll be prompted to enter a new name.  
 The service principal credentials are stored in your local keyring.  
+
+## Cluster Configuration
+
+### Generate Machine Configurations
+
+Make sure to customize the node definitions in `homelabtools/cmd/generate/main.go` before running this or else you'll end up with my local setup.  
+
+```bash
+make generate
+```
+
+### First Time Setup
+
+Run for each config, matching it to its IP.
+
+```bash
+cd ~/.talos
+talosctl apply-config \
+  --nodes "NODE_IP" \
+  --endpoints "NODE_IP \
+  --file "./CONFIG_FILE_NAME.YAML" \
+  --insecure
+```
+
+Then bootstrap the cluster and generate the kube config.  
+
+```bash
+talosctl bootstrap --nodes "CONTROL_PLANE_IP"
+talosctl kubeconfig --nodes "CONTROL_PLANE_IP"
+```
