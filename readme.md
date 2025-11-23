@@ -39,6 +39,8 @@ Also, I'm aware that the usage of the go-keyring isn't correct since I'm setting
 
 ## Azure Setup
 
+Refer to commit [b599a7b](https://github.com/FailureToLoad/homelab-cluster/commit/b599a7b02768a2a5264bd2f1483465b797e3554f).  
+
 ### Prerequisites
 
 Before running any commands, ensure you have:
@@ -85,6 +87,8 @@ The service principal credentials are stored in your local keyring.
 
 ## Cluster Configuration
 
+Refer to commit [1d1078f](https://github.com/FailureToLoad/homelab-cluster/commit/1d1078fae424a1818d8cc91164c7f0ab06b580eb).  
+
 ### Generate Machine Configurations
 
 Make sure to customize the node definitions in `homelabtools/cmd/generate/main.go` before running this or else you'll end up with my local setup.  
@@ -127,6 +131,8 @@ talosctl kubeconfig --nodes "CONTROL_PLANE_IP"
 
 ## Replace flannel and kube-proxy with cilium
 
+Refer to commit [87370f0](https://github.com/FailureToLoad/homelab-cluster/commit/87370f0fd6e1de36ea6fbfd3566a919d95023425)
+
 After the cluster is running with default CNI (flannel) and kube-proxy, deploy core components:
 
 ```bash
@@ -161,6 +167,8 @@ kubectl get nodes
 All nodes should remain Ready with Cilium now handling CNI and service proxying.
 
 ## External Secrets Setup
+
+Refer to commit [e398b4b](https://github.com/FailureToLoad/homelab-cluster/commit/e398b4b70994e1dfb5257ec3b6d31271bfa83f61).  
 
 The External Secrets Operator syncs secrets from Azure Key Vault to Kubernetes. After running `bootstrap.sh`, the operator is deployed but requires proper configuration.
 
@@ -232,24 +240,13 @@ Common issues:
 
 ## ArgoCD Setup
 
+Refer to commits..
+- [848c485](https://github.com/FailureToLoad/homelab-cluster/commit/848c485e8eb5c6866ec5bc0e3d57309d130e63e4) for initial config.  
+
 ArgoCD provides GitOps continuous deployment for the cluster. It's deployed with authentication disabled and exposed only via Tailscale for secure private access.
 
-### Deploy ArgoCD
-
-ArgoCD is deployed as part of the bootstrap process:
-
-```bash
-bash bootstrap.sh
-```
-
-This applies:
-
-1. ArgoCD CRDs
-2. ArgoCD application manifests
-3. ExternalSecrets for ArgoCD credentials (redis password, server secret, GitHub SSH key)
-
 ### Secret Management
-
+Refer to commit [b68176c](https://github.com/FailureToLoad/homelab-cluster/commit/b68176c8e364ddc2926a107b16654a3159c1d0e4) for configuring argo with external azure secrets.  
 ArgoCD requires secrets stored in Azure Key Vault as individual flattened keys (not JSON):
 
 - `argocd-redis-password` - Redis authentication
@@ -268,6 +265,21 @@ go run ./cmd/customresourcevalues
 
 **Important**: Add the generated SSH public key to your GitHub account for repository access.
 
+### Deploy ArgoCD
+
+ArgoCD is deployed as part of the bootstrap process:
+
+```bash
+bash bootstrap.sh
+```
+
+This applies:
+
+1. ArgoCD CRDs
+2. ArgoCD application manifests
+3. ExternalSecrets for ArgoCD credentials (redis password, server secret, GitHub SSH key)
+
+
 ### Verify Deployment
 
 Check that all pods are running:
@@ -284,13 +296,11 @@ kubectl rollout restart deployment/argocd-server -n core-argocd
 
 ### Access ArgoCD UI
 
-ArgoCD is exposed via Tailscale Ingress. After deployment, check the assigned hostname:
+Next up is securing argo's UI with tailscale. Until that's complete the UI can be accessed at http://localhost:8080 via port forward.
 
 ```bash
-kubectl get ingress -n core-argocd
+kubectl port-forward -n core-argocd service/argocd-server 8080:80
 ```
-
-Access the UI at the provided Tailscale hostname (e.g., `https://argocd.your-tailnet.ts.net`) from any device on your tailnet. Authentication is disabled since access is already restricted to your private tailnet.
 
 ### Configuration
 
@@ -341,7 +351,10 @@ Common issues:
 
 ## Tailscale Operator Setup
 
-The Tailscale Kubernetes Operator enables secure access to cluster services over your private Tailscale network (tailnet) without exposing them to the public internet.
+Refer to commit [2d742e1](https://github.com/FailureToLoad/homelab-cluster/commit/2d742e100b216b1433f6bc9af932c563e39c8e86).  
+[And the official tailscale docs.](https://tailscale.com/kb/1236/kubernetes-operator)
+
+The Tailscale Kubernetes Operator enables secure access to cluster services over your private Tailscale network (tailnet) without exposing them to the public internet.  
 
 ### Tailscale Prerequisites
 
@@ -458,3 +471,7 @@ podAnnotations:
 ```
 
 This enables socket load balancer bypass in the operator's pod namespace, required for Tailscale ingress and egress services to work correctly with Cilium.
+
+### Expose ArgoCD UI over Tailnet
+
+This just requires adding an ingress rule detailed in commit [1e3aa5f](https://github.com/FailureToLoad/homelab-cluster/commit/1e3aa5f6d3c44f6a7a16004fcea5dacc2f68624c). Add the rule and then bootstrap. 
