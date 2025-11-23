@@ -241,11 +241,13 @@ Common issues:
 ## ArgoCD Setup
 
 Refer to commits..
+
 - [848c485](https://github.com/FailureToLoad/homelab-cluster/commit/848c485e8eb5c6866ec5bc0e3d57309d130e63e4) for initial config.  
 
 ArgoCD provides GitOps continuous deployment for the cluster. It's deployed with authentication disabled and exposed only via Tailscale for secure private access.
 
 ### Secret Management
+
 Refer to commit [b68176c](https://github.com/FailureToLoad/homelab-cluster/commit/b68176c8e364ddc2926a107b16654a3159c1d0e4) for configuring argo with external azure secrets.  
 ArgoCD requires secrets stored in Azure Key Vault as individual flattened keys (not JSON):
 
@@ -278,7 +280,6 @@ This applies:
 1. ArgoCD CRDs
 2. ArgoCD application manifests
 3. ExternalSecrets for ArgoCD credentials (redis password, server secret, GitHub SSH key)
-
 
 ### Verify Deployment
 
@@ -474,4 +475,4 @@ This enables socket load balancer bypass in the operator's pod namespace, requir
 
 ### Expose ArgoCD UI over Tailnet
 
-This just requires adding an ingress rule detailed in commit [1e3aa5f](https://github.com/FailureToLoad/homelab-cluster/commit/1e3aa5f6d3c44f6a7a16004fcea5dacc2f68624c). Add the rule and then bootstrap. 
+This just requires adding an ingress rule detailed in commit [1e3aa5f](https://github.com/FailureToLoad/homelab-cluster/commit/1e3aa5f6d3c44f6a7a16004fcea5dacc2f68624c). Add the rule and then bootstrap.

@@ -134,17 +134,12 @@ func generateSSHKeyPair() (privateKey, publicKey string, err error) {
 		return "", "", fmt.Errorf("failed to generate ed25519 key: %w", err)
 	}
 
-	// Marshal private key to PEM format
-	privBytes, err := x509.MarshalPKCS8PrivateKey(privKey)
+	privBytes, err := ssh.MarshalPrivateKey(privKey, "")
 	if err != nil {
 		return "", "", fmt.Errorf("failed to marshal private key: %w", err)
 	}
-	privPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: privBytes,
-	})
+	privPEM := pem.EncodeToMemory(privBytes)
 
-	// Convert public key to SSH format
 	sshPubKey, err := ssh.NewPublicKey(pubKey)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create SSH public key: %w", err)

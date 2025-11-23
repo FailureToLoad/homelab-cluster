@@ -5,3 +5,4 @@ resources:
   - resources/ExternalSecret--core-argocd--argocd-redis.yaml
   - resources/ExternalSecret--core-argocd--argocd-secret.yaml
   - resources/ExternalSecret--core-argocd--github-credentials.yaml
+  - resources/Application--core-apps.yaml
