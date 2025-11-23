@@ -19,5 +19,4 @@ fetch-secrets:
 .PHONY: bootstrap
 bootstrap:
 	kubesource
-	$(MAKE) fetch-secrets
 	./bootstrap.sh

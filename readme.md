@@ -339,3 +339,120 @@ Common issues:
 - **ExternalSecrets not syncing**: ClusterSecretStore `tenantId` not properly configured
 - **GitHub repository access**: SSH public key not added to GitHub account
 
+## Tailscale Operator Setup
+
+The Tailscale Kubernetes Operator enables secure access to cluster services over your private Tailscale network (tailnet) without exposing them to the public internet.
+
+### Prerequisites
+
+Before deploying the operator, you need to create OAuth credentials in your Tailscale account:
+
+1. **Configure ACL tags in your tailnet policy file**:
+
+   Navigate to [Access Controls](https://login.tailscale.com/admin/acls) in the Tailscale admin console and add:
+
+   ```json
+   {
+     "tagOwners": {
+       "tag:k8s-operator": [],
+       "tag:k8s": ["tag:k8s-operator"]
+     }
+   }
+   ```
+
+2. **Create OAuth client**:
+
+   Go to [Trust Credentials](https://login.tailscale.com/admin/settings/trust-credentials) and create an OAuth client with:
+   - **Scopes**: `Devices Core` (write), `Auth Keys` (write)
+   - **Tags**: `tag:k8s-operator`
+
+3. **Store OAuth credentials in Azure Key Vault**:
+
+   ```bash
+   az keyvault secret set --vault-name your-vault-name --name tailscale-oauth-client --value "YOUR_CLIENT_ID"
+   az keyvault secret set --vault-name your-vault-name --name tailscale-oauth-secret --value "YOUR_CLIENT_SECRET"
+   ```
+
+### Deploy Tailscale Operator
+
+The operator is deployed as part of the bootstrap process:
+
+```bash
+make bootstrap
+```
+
+This deploys:
+1. Tailscale operator CRDs
+2. Operator deployment with proper RBAC
+3. ExternalSecret to sync OAuth credentials from Azure Key Vault
+4. Cilium socket bypass configuration for kube-proxy replacement mode
+
+### Verify Deployment
+
+Check that the operator is running:
+
+```bash
+kubectl get pods -n core-tailscale
+```
+
+The operator pod should show `Running` status.
+
+Verify the operator joined your tailnet:
+
+Go to [Machines](https://login.tailscale.com/admin/machines) in the Tailscale admin console and look for a node named `homelab-k8s-operator` tagged with `tag:k8s-operator`.
+
+### Configuration
+
+The operator is configured with:
+- **Hostname**: `homelab-k8s-operator`
+- **Operator tags**: `tag:k8s-operator`
+- **Proxy tags**: `tag:k8s` (for services exposed by the operator)
+- **API server proxy**: Disabled (not needed for single-cluster setup)
+- **Cilium compatibility**: Socket bypass annotation configured for kube-proxy replacement mode
+
+### Tailscale Operator Troubleshooting
+
+If the operator fails to start:
+
+1. **Check operator logs**:
+
+   ```bash
+   kubectl logs -n core-tailscale deployment/operator --tail=50
+   ```
+
+2. **Common errors**:
+   - **"API token invalid" (401)**: OAuth credentials are incorrect. Verify secrets in Azure Key Vault match your Tailscale OAuth client
+   - **"Permission denied"**: OAuth client missing required scopes (`Devices Core`, `Auth Keys`)
+   - **"Tag not found"**: ACL tags not configured in tailnet policy file
+
+3. **Verify OAuth secret**:
+
+   ```bash
+   kubectl get externalsecret -n core-tailscale
+   kubectl get secret operator-oauth -n core-tailscale -o jsonpath='{.data.client_id}' | base64 -d
+   ```
+
+4. **Refresh secrets after updating Key Vault**:
+
+   ```bash
+   kubectl delete externalsecret tailscale-operator-oauth -n core-tailscale
+   kubectl apply -f k8s/core/tailscale/app/resources/ExternalSecret--tailscale-oauth.yaml
+   kubectl rollout restart deployment/operator -n core-tailscale
+   ```
+
+If the operator isn't appearing in your tailnet:
+
+- Check that ACL tags are configured correctly
+- Verify OAuth client has `tag:k8s-operator` assigned
+- Check operator logs for authentication errors
+
+### Cilium Compatibility
+
+Since the cluster runs Cilium in kube-proxy replacement mode, the operator deployment includes the annotation:
+
+```yaml
+podAnnotations:
+  io.cilium.no-track-port: "41641"
+```
+
+This enables socket load balancer bypass in the operator's pod namespace, required for Tailscale ingress and egress services to work correctly with Cilium.
