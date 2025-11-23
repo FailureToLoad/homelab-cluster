@@ -2,14 +2,18 @@ package vault
 
 import (
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"math/big"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 func generateCACert(commonName string) (certPEM, keyPEM string, err error) {
@@ -114,4 +118,38 @@ func generateTLSCert(caCertPEM, caKeyPEM, commonName string) (certPEM, keyPEM st
 	keyPEMBytes := pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: privBytes})
 
 	return string(certPEMBytes), string(keyPEMBytes), nil
+}
+
+func generateRandomPassword(length int) (string, error) {
+	bytes := make([]byte, length)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", fmt.Errorf("failed to generate random bytes: %w", err)
+	}
+	return base64.URLEncoding.EncodeToString(bytes)[:length], nil
+}
+
+func generateSSHKeyPair() (privateKey, publicKey string, err error) {
+	pubKey, privKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate ed25519 key: %w", err)
+	}
+
+	// Marshal private key to PEM format
+	privBytes, err := x509.MarshalPKCS8PrivateKey(privKey)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to marshal private key: %w", err)
+	}
+	privPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "PRIVATE KEY",
+		Bytes: privBytes,
+	})
+
+	// Convert public key to SSH format
+	sshPubKey, err := ssh.NewPublicKey(pubKey)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to create SSH public key: %w", err)
+	}
+	pubBytes := ssh.MarshalAuthorizedKey(sshPubKey)
+
+	return string(privPEM), string(pubBytes), nil
 }

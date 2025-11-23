@@ -159,3 +159,183 @@ kubectl get nodes
 ```
 
 All nodes should remain Ready with Cilium now handling CNI and service proxying.
+
+## External Secrets Setup
+
+The External Secrets Operator syncs secrets from Azure Key Vault to Kubernetes. After running `bootstrap.sh`, the operator is deployed but requires proper configuration.
+
+### ClusterSecretStore Configuration
+
+The `ClusterSecretStore` connects External Secrets to Azure Key Vault using Service Principal authentication. The critical requirement is that the `tenantId` must be **explicitly specified** in the spec, not just referenced from a secret.
+
+Your ClusterSecretStore should look like:
+
+```yaml
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: azure-keyvault
+spec:
+  provider:
+    azurekv:
+      vaultUrl: "https://your-vault-name.vault.azure.net"
+      authType: ServicePrincipal
+      tenantId: "your-tenant-id-here"  # Must be explicit
+      authSecretRef:
+        clientId:
+          name: azure-secret
+          namespace: core-external-secrets
+          key: client-id
+        clientSecret:
+          name: azure-secret
+          namespace: core-external-secrets
+          key: client-secret
+```
+
+### Verify Setup
+
+Check that the ClusterSecretStore is valid:
+
+```bash
+kubectl get clustersecretstore azure-keyvault
+```
+
+Should show `STATUS: Valid` and `READY: True`.
+
+### External Secrets Troubleshooting
+
+If ExternalSecrets show `SecretSyncedError`:
+
+1. Check ClusterSecretStore status:
+
+   ```bash
+   kubectl get clustersecretstore azure-keyvault -o yaml
+   ```
+
+2. Verify service principal credentials:
+
+   ```bash
+   kubectl get secret azure-secret -n core-external-secrets -o yaml
+   ```
+
+3. Check operator logs:
+
+   ```bash
+   kubectl logs -n core-external-secrets deployment/external-secrets --tail=50
+   ```
+
+Common issues:
+
+- **"invalid tenantID"**: The `tenantId` field is empty or not specified in the ClusterSecretStore spec
+- **"Secret does not exist"**: Secrets haven't been created in Azure Key Vault yet (run `make customresourcevalues`)
+- **Service principal permissions**: Ensure the service principal has the required RBAC roles (created by `vaultmaker`)
+
+## ArgoCD Setup
+
+ArgoCD provides GitOps continuous deployment for the cluster. It's deployed with authentication disabled for local access via port-forward.
+
+### Deploy ArgoCD
+
+ArgoCD is deployed as part of the bootstrap process:
+
+```bash
+bash bootstrap.sh
+```
+
+This applies:
+
+1. ArgoCD CRDs
+2. ArgoCD application manifests
+3. ExternalSecrets for ArgoCD credentials (redis password, server secret, GitHub SSH key)
+
+### Secret Management
+
+ArgoCD requires secrets stored in Azure Key Vault as individual flattened keys (not JSON):
+
+- `argocd-redis-password` - Redis authentication
+- `argocd-server-secretkey` - Server secret key
+- `argocd-tls-crt` - TLS certificate
+- `argocd-tls-key` - TLS private key
+- `github-ssh-privatekey` - SSH private key for Git repos
+- `github-ssh-publickey` - SSH public key for Git repos
+
+Generate these secrets:
+
+```bash
+cd homelabtools
+go run ./cmd/customresourcevalues
+```
+
+**Important**: Add the generated SSH public key to your GitHub account for repository access.
+
+### Verify Deployment
+
+Check that all pods are running:
+
+```bash
+kubectl get pods -n core-argocd
+```
+
+All pods should show `Running` status. If `argocd-server` is in `CrashLoopBackOff`, it likely started before secrets were synced. Restart it:
+
+```bash
+kubectl rollout restart deployment/argocd-server -n core-argocd
+```
+
+### Access ArgoCD UI
+
+Since authentication is disabled for local development, access via port-forward:
+
+```bash
+kubectl port-forward -n core-argocd service/argocd-server 8080:80
+```
+
+Access the UI at: <http://localhost:8080>
+
+### Configuration
+
+ArgoCD is configured with:
+
+- **Authentication**: Disabled (`server.disable.auth: true`)
+- **TLS**: Insecure mode for port-forward (`server.insecure: true`)
+- **Dex**: Disabled (SSO not needed)
+- **Notifications**: Disabled
+- **Redis init**: Disabled (secrets managed by External Secrets)
+
+### ArgoCD Troubleshooting
+
+If ExternalSecrets fail to sync:
+
+1. Verify ClusterSecretStore is ready (see External Secrets Setup section)
+2. Check that secrets exist in Azure Key Vault:
+
+   ```bash
+   az keyvault secret list --vault-name your-vault-name --query "[?contains(name, 'argocd') || contains(name, 'github')]"
+   ```
+
+3. Check ExternalSecret status:
+
+   ```bash
+   kubectl get externalsecrets -n core-argocd
+   ```
+
+If pods are failing:
+
+1. Check argocd-server logs:
+
+   ```bash
+   kubectl logs -n core-argocd deployment/argocd-server
+   ```
+
+2. Verify secrets were created:
+
+   ```bash
+   kubectl get secrets -n core-argocd
+   ```
+
+Common issues:
+
+- **"secret not found"**: ArgoCD server started before ExternalSecrets synced - restart the server deployment
+- **ExternalSecrets not syncing**: ClusterSecretStore `tenantId` not properly configured
+- **GitHub repository access**: SSH public key not added to GitHub account
+

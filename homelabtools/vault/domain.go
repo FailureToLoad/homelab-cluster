@@ -133,3 +133,57 @@ func (esp ExternalSecretPrincipal) Validate() error {
 
 	return err
 }
+
+type ArgoCDRedisSecret struct {
+	Password string `json:"password"`
+}
+
+func (ars ArgoCDRedisSecret) Validate() error {
+	if ars.Password == "" {
+		return errors.New("password is required")
+	}
+	return nil
+}
+
+type ArgoCDServerSecret struct {
+	SecretKey string `json:"secretKey"`
+}
+
+func (ass ArgoCDServerSecret) Validate() error {
+	if ass.SecretKey == "" {
+		return errors.New("secretKey is required")
+	}
+	return nil
+}
+
+type ArgoCDCertificates struct {
+	TLSCert string `json:"tlsCert"`
+	TLSKey  string `json:"tlsKey"`
+}
+
+func (ac ArgoCDCertificates) Validate() error {
+	var err error
+	if ac.TLSCert == "" {
+		err = errors.Join(err, errors.New("tls cert is required"))
+	}
+	if ac.TLSKey == "" {
+		err = errors.Join(err, errors.New("tls key is required"))
+	}
+	return err
+}
+
+type GitHubSSHKey struct {
+	PrivateKey string `json:"privateKey"`
+	PublicKey  string `json:"publicKey"`
+}
+
+func (gsk GitHubSSHKey) Validate() error {
+	var err error
+	if gsk.PrivateKey == "" {
+		err = errors.Join(err, errors.New("private key is required"))
+	}
+	if gsk.PublicKey == "" {
+		err = errors.Join(err, errors.New("public key is required"))
+	}
+	return err
+}

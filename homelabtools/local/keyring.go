@@ -8,7 +8,7 @@ const (
 	serviceName     = "homelab"
 	tenantIDKey     = "azure-tenant-id"
 	kvNameKey       = "azure-keyvault-name"
-	kvURLKey        = "azure-keyvault-name"
+	kvURLKey        = "azure-keyvault-url"
 	clientIDKey     = "azure-client-id"
 	clientSecretKey = "azure-client-secret"
 	rgNameKey       = "azure-rg-name"

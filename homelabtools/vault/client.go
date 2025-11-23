@@ -312,3 +312,101 @@ func generateClusterSecrets() (*secrets.Bundle, error) {
 	}
 	return bundle, nil
 }
+
+func (c *Client) GetArgoCDRedisSecret() (*ArgoCDRedisSecret, error) {
+	password, err := c.getSecret("argocd-redis-password")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get argocd-redis-password: %w", err)
+	}
+
+	if password == "" {
+		password, err = generateRandomPassword(32)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate redis password: %w", err)
+		}
+
+		if err := c.setSecret("argocd-redis-password", password); err != nil {
+			return nil, fmt.Errorf("failed to store argocd redis password: %w", err)
+		}
+	}
+
+	return &ArgoCDRedisSecret{Password: password}, nil
+}
+
+func (c *Client) GetArgoCDServerSecret() (*ArgoCDServerSecret, error) {
+	secretKey, err := c.getSecret("argocd-server-secretkey")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get argocd-server-secretkey: %w", err)
+	}
+
+	if secretKey == "" {
+		secretKey, err = generateRandomPassword(32)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate server secret key: %w", err)
+		}
+
+		if err := c.setSecret("argocd-server-secretkey", secretKey); err != nil {
+			return nil, fmt.Errorf("failed to store argocd server secret: %w", err)
+		}
+	}
+
+	return &ArgoCDServerSecret{SecretKey: secretKey}, nil
+}
+
+func (c *Client) GetArgoCDCertificates() (*ArgoCDCertificates, error) {
+	tlsCert, err := c.getSecret("argocd-tls-crt")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get argocd-tls-crt: %w", err)
+	}
+
+	tlsKey, err := c.getSecret("argocd-tls-key")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get argocd-tls-key: %w", err)
+	}
+
+	if tlsCert == "" || tlsKey == "" {
+		tlsCert, tlsKey, err = generateCACert("ArgoCD")
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate argocd certificates: %w", err)
+		}
+
+		if err := c.setSecret("argocd-tls-crt", tlsCert); err != nil {
+			return nil, fmt.Errorf("failed to store argocd tls cert: %w", err)
+		}
+
+		if err := c.setSecret("argocd-tls-key", tlsKey); err != nil {
+			return nil, fmt.Errorf("failed to store argocd tls key: %w", err)
+		}
+	}
+
+	return &ArgoCDCertificates{TLSCert: tlsCert, TLSKey: tlsKey}, nil
+}
+
+func (c *Client) GetGitHubSSHKey() (*GitHubSSHKey, error) {
+	privateKey, err := c.getSecret("github-ssh-privatekey")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get github-ssh-privatekey: %w", err)
+	}
+
+	publicKey, err := c.getSecret("github-ssh-publickey")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get github-ssh-publickey: %w", err)
+	}
+
+	if privateKey == "" || publicKey == "" {
+		privateKey, publicKey, err = generateSSHKeyPair()
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate SSH key pair: %w", err)
+		}
+
+		if err := c.setSecret("github-ssh-privatekey", privateKey); err != nil {
+			return nil, fmt.Errorf("failed to store github ssh private key: %w", err)
+		}
+
+		if err := c.setSecret("github-ssh-publickey", publicKey); err != nil {
+			return nil, fmt.Errorf("failed to store github ssh public key: %w", err)
+		}
+	}
+
+	return &GitHubSSHKey{PrivateKey: privateKey, PublicKey: publicKey}, nil
+}

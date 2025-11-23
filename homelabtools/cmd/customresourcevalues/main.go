@@ -48,11 +48,34 @@ func run(baseDir string) error {
 		return fmt.Errorf("failed to get external secret principal: %w", err)
 	}
 
+	argoCDRedis, err := client.GetArgoCDRedisSecret()
+	if err != nil {
+		return fmt.Errorf("failed to get argocd redis secret: %w", err)
+	}
+
+	argoCDServer, err := client.GetArgoCDServerSecret()
+	if err != nil {
+		return fmt.Errorf("failed to get argocd server secret: %w", err)
+	}
+
+	argoCDCerts, err := client.GetArgoCDCertificates()
+	if err != nil {
+		return fmt.Errorf("failed to get argocd certificates: %w", err)
+	}
+
+	githubSSH, err := client.GetGitHubSSHKey()
+	if err != nil {
+		return fmt.Errorf("failed to get github ssh key: %w", err)
+	}
+
 	if err := os.MkdirAll(filepath.Join(baseDir, "cilium"), 0o755); err != nil {
 		return fmt.Errorf("failed to create cilium directory: %w", err)
 	}
 	if err := os.MkdirAll(filepath.Join(baseDir, "azure"), 0o755); err != nil {
 		return fmt.Errorf("failed to create azure directory: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Join(baseDir, "argocd"), 0o755); err != nil {
+		return fmt.Errorf("failed to create argocd directory: %w", err)
 	}
 
 	if err := writeFile(filepath.Join(baseDir, "cilium", "ca.crt"), ciliumSecrets.CiliumCACRT); err != nil {
@@ -78,7 +101,28 @@ func run(baseDir string) error {
 		return err
 	}
 
+	if err := writeFile(filepath.Join(baseDir, "argocd", "redis-password"), argoCDRedis.Password); err != nil {
+		return err
+	}
+	if err := writeFile(filepath.Join(baseDir, "argocd", "server-secret-key"), argoCDServer.SecretKey); err != nil {
+		return err
+	}
+	if err := writeFile(filepath.Join(baseDir, "argocd", "tls.crt"), argoCDCerts.TLSCert); err != nil {
+		return err
+	}
+	if err := writeFile(filepath.Join(baseDir, "argocd", "tls.key"), argoCDCerts.TLSKey); err != nil {
+		return err
+	}
+	if err := writeFile(filepath.Join(baseDir, "argocd", "github-ssh-private-key"), githubSSH.PrivateKey); err != nil {
+		return err
+	}
+	if err := writeFile(filepath.Join(baseDir, "argocd", "github-ssh-public-key"), githubSSH.PublicKey); err != nil {
+		return err
+	}
+
 	fmt.Println("Successfully fetched and wrote all secrets")
+	fmt.Println("\nIMPORTANT: Add the following SSH public key to your GitHub account:")
+	fmt.Println(githubSSH.PublicKey)
 	return nil
 }
 
