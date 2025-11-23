@@ -8,7 +8,7 @@ My cluster consists of three 8gb raspberry pi 5's and one 16gb. This is overkill
 
 ## Requirements
 
-- A linux repo that supports `secret-tool`
+- A linux machine that supports `secret-tool`
 - At least two rpi5's
 - An azure subscription (or a friend with one)
 - [azureCLI](https://learn.microsoft.com/en-us/cli/azure/what-is-azure-cli?view=azure-cli-latest)
@@ -35,7 +35,7 @@ sudo dd if=metal-arm64.raw of=/dev/sda bs=4M status=progress conv=fsync
 
 [You can use kustomize directly](https://www.reddit.com/r/kubernetes/comments/1o1owch/comment/njc8ske/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button) instead of kubesource, but I found kubesource to be pretty convenient.
 
-Also, I'm aware that the usage of the go-keyring isn't correct since I'm setting the user attribute to a random key, but its working fine for me at the moment so I'm quite ready to fix it.  
+Also, I'm aware that the usage of the go-keyring isn't correct since I'm setting the username attribute to a secret key, but it's working fine for me at the moment so I'm not ready to fix it.  
 
 ## Azure Setup
 
@@ -101,7 +101,7 @@ Run for each config, matching it to its IP.
 cd ~/.talos
 talosctl apply-config \
   --nodes "NODE_IP" \
-  --endpoints "NODE_IP \
+  --endpoints "NODE_IP" \
   --file "./CONFIG_FILE_NAME.YAML" \
   --insecure
 ```
@@ -114,8 +114,8 @@ Run this command on each node to update with new config values.
 cd ~/.talos
 talosctl apply-config \
   --nodes "NODE_IP" \
-  --endpoints "NODE_IP \
-  --file "./CONFIG_FILE_NAME.YAML" \
+  --endpoints "NODE_IP" \
+  --file "./CONFIG_FILE_NAME.YAML"
 ```
 
 Then bootstrap the cluster and generate the kube config.  
@@ -232,7 +232,7 @@ Common issues:
 
 ## ArgoCD Setup
 
-ArgoCD provides GitOps continuous deployment for the cluster. It's deployed with authentication disabled for local access via port-forward.
+ArgoCD provides GitOps continuous deployment for the cluster. It's deployed with authentication disabled and exposed only via Tailscale for secure private access.
 
 ### Deploy ArgoCD
 
@@ -284,13 +284,13 @@ kubectl rollout restart deployment/argocd-server -n core-argocd
 
 ### Access ArgoCD UI
 
-Since authentication is disabled for local development, access via port-forward:
+ArgoCD is exposed via Tailscale Ingress. After deployment, check the assigned hostname:
 
 ```bash
-kubectl port-forward -n core-argocd service/argocd-server 8080:80
+kubectl get ingress -n core-argocd
 ```
 
-Access the UI at: <http://localhost:8080>
+Access the UI at the provided Tailscale hostname (e.g., `https://argocd.your-tailnet.ts.net`) from any device on your tailnet. Authentication is disabled since access is already restricted to your private tailnet.
 
 ### Configuration
 
@@ -343,7 +343,7 @@ Common issues:
 
 The Tailscale Kubernetes Operator enables secure access to cluster services over your private Tailscale network (tailnet) without exposing them to the public internet.
 
-### Prerequisites
+### Tailscale Prerequisites
 
 Before deploying the operator, you need to create OAuth credentials in your Tailscale account:
 
@@ -363,7 +363,7 @@ Before deploying the operator, you need to create OAuth credentials in your Tail
 2. **Create OAuth client**:
 
    Go to [Trust Credentials](https://login.tailscale.com/admin/settings/trust-credentials) and create an OAuth client with:
-   - **Scopes**: `Devices Core` (write), `Auth Keys` (write)
+   - **Scopes**: `Devices -> Core` (read,write), `Keys -> Auth Keys` (read,write)
    - **Tags**: `tag:k8s-operator`
 
 3. **Store OAuth credentials in Azure Key Vault**:
@@ -382,12 +382,13 @@ make bootstrap
 ```
 
 This deploys:
+
 1. Tailscale operator CRDs
 2. Operator deployment with proper RBAC
 3. ExternalSecret to sync OAuth credentials from Azure Key Vault
 4. Cilium socket bypass configuration for kube-proxy replacement mode
 
-### Verify Deployment
+### Verify Tailscale Deployment
 
 Check that the operator is running:
 
@@ -401,9 +402,10 @@ Verify the operator joined your tailnet:
 
 Go to [Machines](https://login.tailscale.com/admin/machines) in the Tailscale admin console and look for a node named `homelab-k8s-operator` tagged with `tag:k8s-operator`.
 
-### Configuration
+### Tailscale Configuration
 
 The operator is configured with:
+
 - **Hostname**: `homelab-k8s-operator`
 - **Operator tags**: `tag:k8s-operator`
 - **Proxy tags**: `tag:k8s` (for services exposed by the operator)
