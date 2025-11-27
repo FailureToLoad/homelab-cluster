@@ -83,3 +83,100 @@ This will check for and create any missing resources:
 
 If the Key Vault name is already taken globally, you'll be prompted to enter a new name.  
 The service principal credentials are stored in your local keyring.  
+
+## Cluster Configuration
+
+References
+
+- [Part 1 of artuross's blog series](https://rcwz.pl/2025-10-04-installing-talos-on-raspberry-pi-5/)
+
+### Generate Machine Configurations
+
+Customize the node definitions in `homelabtools/cmd/configmaker/main.go`, then run `make talosconfigs`. If for some reason you need to overwrite the stored config instead of retrieving what exists, run `make freshtalosconfigs`.
+
+### First Time Setup
+
+Run for each config, matching it to its IP.
+
+```bash
+cd ~/.talos
+talosctl apply-config \
+  --nodes "NODE_IP" \
+  --endpoints "NODE_IP" \
+  --file "./CONFIG_FILE_NAME.YAML" \
+  --insecure
+```
+
+Then bootstrap the cluster and generate the kube config.  
+
+```bash
+talosctl bootstrap --nodes "CONTROL_PLANE_IP"
+talosctl kubeconfig --nodes "CONTROL_PLANE_IP"
+```
+
+## Deploy initial config
+
+References
+
+- [Part 2 of artuross's blog series](https://rcwz.pl/2025-10-08-adding-cilium-to-talos-cluster/)
+
+The cluster will be in a semi-broken state until we deploy cilium. The alternative would have been to deploy with flannel and kubeproxy, then upgrade and rip them out. Either approach is fine, I just prefer this one.  
+
+Run `make ciliumsecrets` to generate the initial secrets for clilum.  
+Run `make cilium` to perform the following actions:
+
+1. Deploy namespaces with secrets
+1. Deploy Cilium CNI with kube-proxy replacement
+1. Wait for the rollout to complete with a 2 minute timout
+
+Verify the cluster is healthy:
+
+```bash
+kubectl get nodes
+```
+
+All nodes should remain Ready with Cilium now handling CNI and service proxying.
+
+### Update Node Image
+
+Before getting too far along, we should update the nodes with an image that has iscsi-tools and linux-tools.  
+
+The iscsi-tools extension is required for services capable of mounting PVCs, like longhorn.  
+
+The linux-tools extension just provides common linux CLI tools.
+
+The workflow in this repo builds this image and publishes it as a package.  
+
+Note that when I ran the upgrade, it looked to have failed part-way through with the below error, but after the machine restarted I saw it had the correct extensions.  
+
+```bash
+sequence error: sequence failed: error running phase 9 in upgrade sequence: task 1/1: failed, task "upgrade" failed: exit code 1
+```
+
+Upgrade the control plane first.  
+
+```bash
+talosctl upgrade --image ghcr.io/failuretoload/talos-rpi5:custom --nodes $CONTROL_PLANE
+```
+
+Once it restarts, check that it has the correct extensions.
+
+```bash
+talosctl get extensions --nodes $CONTROL_PLANE
+```
+
+Repeat the process of upgrade -> verify for all control plane nodes before moving on to workers.  
+
+Upgrade the the worker.
+
+```bash
+talosctl upgrade --image ghcr.io/failuretoload/talos-rpi5:custom --nodes $WORKER
+```
+
+And check that the worker has the right extensions.
+
+```bash
+talosctl get extensions --nodes $WORKER
+```
+
+Again, repeat this process for all worker nodes.
