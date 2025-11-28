@@ -1,4 +1,4 @@
-.PHONY: vaultmaker talosconfigs freshtalosconfigs ciliumsecrets cilium cert-manager azuresecrets external-secrets tailscale
+.PHONY: vaultmaker talosconfigs freshtalosconfigs ciliumsecrets cilium cert-manager azuresecrets external-secrets tailscale argocd
 
 vaultmaker:
 	cd homelabtools && go run ./cmd/vaultmaker/main.go
@@ -37,3 +37,8 @@ tailscale:
 	kubectl apply -k cluster/namespaces --server-side
 	kubectl kustomize cluster/apps/tailscale --enable-helm | kubectl apply --server-side -f -
 	kubectl rollout status deployment/operator -n core-tailscale --timeout=120s
+
+argocd:
+	kubectl apply -k cluster/namespaces --server-side
+	kubectl kustomize cluster/apps/argocd --enable-helm | kubectl apply --server-side -f -
+	kubectl rollout status deployment/argocd-server -n core-argocd --timeout=120s

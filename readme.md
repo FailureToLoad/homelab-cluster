@@ -395,3 +395,99 @@ podAnnotations:
 ```
 
 This enables socket load balancer bypass in the operator's pod namespace, required for Tailscale ingress and egress services to work correctly with Cilium.
+
+## ArgoCD Setup
+
+ArgoCD provides GitOps continuous deployment for the cluster. It's deployed with authentication disabled and exposed only via Tailscale for secure private access.
+
+After configuring ArgoCD in the next step, cluster updates will be handled via comits to the repo. Argo will keep the cluster synced with the state of the repo's manifests. No more make commands.
+
+### Secret Management
+
+ArgoCD requires github ssh creds to be stored in Azure Key Vault as individual flattened keys (not JSON):
+
+- `github-ssh-privatekey` - SSH private key for Git repos
+
+- `github-ssh-publickey` - SSH public key for Git repos
+
+Generate these secrets with `./scripts/make-github-ssh.sh`, then add the generated SSH public key to your GitHub account for repository access.
+
+### Deploy ArgoCD
+
+Run `make argocd` to stand up a blank instance of argo.  
+
+### Verify Deployment
+
+Check that all pods are running:
+
+```bash
+
+
+kubectl get pods -n core-argocd
+
+
+```
+
+All pods should show `Running` status. If `argocd-server` is in `CrashLoopBackOff`, it likely started before secrets were synced. Restart it:
+
+```bash
+
+
+kubectl rollout restart deployment/argocd-server -n core-argocd
+
+
+```
+
+### Access ArgoCD UI
+
+The `cluster/apps/argocd/ingress.yaml` file defines how ArgoCD's UI is exposed over your tailnet.  
+
+The most important bit in there is the host name in the tls section. You'll see a new machine with this name in your tailscale admin dash. It's also the subroute you'll access it through, e.g. `argocd.yourtailnet.ts`  
+
+### ArgoCD Troubleshooting
+
+If ExternalSecrets fail to sync:
+
+1. Verify ClusterSecretStore is ready (see External Secrets Setup section)
+
+2. Check that secrets exist in Azure Key Vault:
+
+   ```bash
+
+
+   az keyvault secret list --vault-name your-vault-name --query "[?contains(name, 'argocd') || contains(name, 'github')]"
+
+
+   ```
+
+3. Check ExternalSecret status:
+
+   ```bash
+
+
+   kubectl get externalsecrets -n core-argocd
+
+
+   ```
+
+If pods are failing:
+
+1. Check argocd-server logs:
+
+   ```bash
+
+
+   kubectl logs -n core-argocd deployment/argocd-server
+
+
+   ```
+
+2. Verify secrets were created:
+
+   ```bash
+
+
+   kubectl get secrets -n core-argocd
+
+
+   ```
