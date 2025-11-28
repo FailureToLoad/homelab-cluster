@@ -13,19 +13,3 @@ secretGenerator:
       - tenant-id=secrets/azure/tenant-id
     options:
       disableNameSuffixHash: true
-  - name: cilium-ca
-    namespace: core-cilium
-    files:
-      - secrets/cilium/ca.crt
-      - secrets/cilium/ca.key
-    options:
-      disableNameSuffixHash: true
-  - name: hubble-server-certs
-    namespace: core-cilium
-    files:
-      - secrets/cilium/ca.crt
-      - secrets/cilium/tls.crt
-      - secrets/cilium/tls.key
-    type: kubernetes.io/tls
-    options:
-      disableNameSuffixHash: true

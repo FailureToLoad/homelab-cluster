@@ -269,3 +269,21 @@ It means the issuers were applied too soon after the cert manager was launched, 
 ```bash
 kubectl apply -k cluster/apps/cert-manager/issuers --server-side
 ```
+
+## Connect Cilium to Cert Manager
+
+Now that cert manager is live this commit changes how cilium sources it secrets. Just run `make cilium` to deploy the changes.
+
+After it deploys you can verify by running `kubectl get certificates -n core-cilium`.
+
+The output should look like this.  
+
+```bash
+NAME                        READY   SECRET                      
+hubble-relay-client-certs   True    hubble-relay-client-certs   
+hubble-server-certs         True    hubble-server-certs         
+```
+
+The old secrets will still exist in the cluster. Run `kubectl delete secret cilium-ca -n core-cilium` to drop them.  
+
+Verify by running `kubectl get secrets -n core-cilium`. You should just see the `hubble-relay-client-certs` and `hubble-server-certs` secrets.

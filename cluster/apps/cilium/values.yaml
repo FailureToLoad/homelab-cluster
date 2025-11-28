@@ -13,10 +13,16 @@ kubeProxyReplacement: true
 operator:
   replicas: 2
 
-tls:
-  secretsNamespace:
-    create: false
-    name: core-cilium
+hubble:
+  tls:
+    auto:
+      method: certmanager
+      certManagerIssuerRef:
+        group: cert-manager.io
+        kind: ClusterIssuer
+        name: cluster-ca-issuer
+  relay:
+    enabled: true
 
 securityContext:
   capabilities:
