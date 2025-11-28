@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: core-argocd
+spec:
+  project: default
+  destination:
+    name: in-cluster
+    namespace: core-cert-manager
+  sources:
+    - repoURL: https://charts.jetstack.io
+      chart: cert-manager
+      targetRevision: v1.19.1
+      helm:
+        releaseName: cert-manager
+        valueFiles:
+          - $values/cluster/resources/cert-manager/values.yaml
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      ref: values
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      path: cluster/resources/cert-manager
+      directory:
+        exclude: "values.yaml"
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+      allowEmpty: true
+    syncOptions:
+      - ServerSideApply=true

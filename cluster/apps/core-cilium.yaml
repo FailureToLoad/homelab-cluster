@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cilium
+  namespace: core-argocd
+spec:
+  project: default
+  destination:
+    name: in-cluster
+    namespace: core-cilium
+  sources:
+    - repoURL: https://helm.cilium.io/
+      chart: cilium
+      targetRevision: 1.18.0
+      helm:
+        releaseName: cilium
+        valueFiles:
+          - $values/cluster/resources/cilium/values.yaml
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      ref: values
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      path: cluster/resources/cilium
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: cilium-ca
+      jsonPointers:
+        - /data
+    - group: ""
+      kind: Secret
+      name: hubble-server-certs
+      jsonPointers:
+        - /data
+    - group: external-secrets.io
+      kind: ExternalSecret
+      jqPathExpressions:
+        - .spec.data[].remoteRef.conversionStrategy
+        - .spec.data[].remoteRef.decodingStrategy
+        - .spec.data[].remoteRef.metadataPolicy
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+      allowEmpty: true
+    syncOptions:
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true
