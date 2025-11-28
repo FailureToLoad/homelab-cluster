@@ -8,3 +8,4 @@ resources:
   - core-tailscale.yaml
   - core-argocd.yaml
   - core-metrics-server.yaml
+  - core-longhorn.yaml
