@@ -8,3 +8,4 @@ resources:
   - core-argocd.yaml
   - core-metrics-server.yaml
   - core-longhorn.yaml
+  - core-observe.yaml
