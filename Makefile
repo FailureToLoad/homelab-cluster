@@ -1,4 +1,4 @@
-.PHONY: vaultmaker talosconfigs freshtalosconfigs ciliumsecrets cilium azuresecrets external-secrets
+.PHONY: vaultmaker talosconfigs freshtalosconfigs ciliumsecrets cilium cert-manager azuresecrets external-secrets
 
 vaultmaker:
 	cd homelabtools && go run ./cmd/vaultmaker/main.go
@@ -17,6 +17,15 @@ cilium:
 	kubectl apply -k cluster/namespaces --server-side
 	kubectl kustomize cluster/apps/cilium --enable-helm | kubectl apply --server-side -f -
 	kubectl rollout status daemonset/cilium -n core-cilium --timeout=120s
+
+cert-manager:
+	kubectl apply -k cluster/namespaces --server-side
+	kubectl kustomize cluster/apps/cert-manager --enable-helm | kubectl apply --server-side -f -
+	kubectl rollout status deployment/cert-manager -n core-cert-manager --timeout=120s
+	kubectl rollout status deployment/cert-manager-webhook -n core-cert-manager --timeout=120s
+	kubectl rollout status deployment/cert-manager-cainjector -n core-cert-manager --timeout=120s
+	sleep 10
+	kubectl apply -k cluster/apps/cert-manager/issuers --server-side
 
 azuresecrets:
 	mkdir -p cluster/namespaces/secrets/azure

@@ -251,3 +251,21 @@ If ExternalSecrets show `SecretSyncedError`:
    ```bash
    kubectl logs -n core-external-secrets deployment/external-secrets --tail=50
    ```
+
+## Cert Manager Setup
+
+Applying cert manager is a lot more hands off than the rest because we only need it for self-signed cluster certs.  
+
+Just run `make cert-manager`.  
+
+If you run into this error:
+
+```bash
+Error from server (InternalError): Internal error occurred: failed calling webhook "webhook.cert-manager.io": failed to call webhook: Post "https://cert-manager-webhook.core-cert-manager.svc:443/validate?timeout=30s": dial tcp xx.xx.xx.xx:443: connect: operation not permitted
+```
+
+It means the issuers were applied too soon after the cert manager was launched, relaunching the issuers should remedy the problem.  
+
+```bash
+kubectl apply -k cluster/apps/cert-manager/issuers --server-side
+```
