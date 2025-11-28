@@ -180,3 +180,74 @@ talosctl get extensions --nodes $WORKER
 ```
 
 Again, repeat this process for all worker nodes.
+
+## External Secrets Setup
+
+The External Secrets Operator syncs secrets from Azure Key Vault to Kubernetes.
+
+### ClusterSecretStore Configuration
+
+The `ClusterSecretStore` connects External Secrets to Azure Key Vault using Service Principal authentication.  
+
+Run `az account show --query tenantId -o tsv` to fetch your tenantID and use it to update `cluster/apps/external-secrets/azure-keyvault.yaml`.
+
+```yaml
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: azure-keyvault
+spec:
+  provider:
+    azurekv:
+      vaultUrl: "https://your-vault-name.vault.azure.net"
+      authType: ServicePrincipal
+      tenantId: "your-tenant-id-here"  
+      authSecretRef:
+        clientId:
+          name: azure-secret
+          namespace: core-external-secrets
+          key: client-id
+        clientSecret:
+          name: azure-secret
+          namespace: core-external-secrets
+          key: client-secret
+```
+
+Note that mine has the tenant as a secret too more for paranoia's sake more than any real world requirement.  
+
+### Deploy Cluster Secret Store
+
+Run `make azuresecrets` from the repo root to generate/fetch the service principal creds the operator needs to connect to the keyvault.  
+Run `make external-secrets` to deploy the external secrets operator to the cluster.
+
+### Verify Setup
+
+Check that the ClusterSecretStore is valid:
+
+```bash
+kubectl get clustersecretstore azure-keyvault
+```
+
+Should show `STATUS: Valid` and `READY: True`.
+
+### External Secrets Troubleshooting
+
+If ExternalSecrets show `SecretSyncedError`:
+
+1. Check ClusterSecretStore status:
+
+   ```bash
+   kubectl get clustersecretstore azure-keyvault -o yaml
+   ```
+
+2. Verify service principal credentials:
+
+   ```bash
+   kubectl get secret azure-secret -n core-external-secrets -o yaml
+   ```
+
+3. Check operator logs:
+
+   ```bash
+   kubectl logs -n core-external-secrets deployment/external-secrets --tail=50
+   ```

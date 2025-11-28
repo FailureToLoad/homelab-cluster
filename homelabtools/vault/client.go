@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
+	"github.com/failuretoload/homelabtools/local"
 	"github.com/siderolabs/talos/pkg/machinery/config"
 	"github.com/siderolabs/talos/pkg/machinery/config/generate/secrets"
 	"github.com/siderolabs/talos/pkg/machinery/role"
@@ -211,6 +212,69 @@ func (c *Client) GetHubbleSecrets() (*HubbleSecrets, error) {
 	}
 
 	return &hubbleSecrets, nil
+}
+
+func (c *Client) GetExternalSecretPrincipal() (*ExternalSecretPrincipal, error) {
+	secretJSON, err := c.getSecret("external-secret-principal")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get external-secret-principal: %w", err)
+	}
+
+	if secretJSON != "" {
+		var esp ExternalSecretPrincipal
+		if err := json.Unmarshal([]byte(secretJSON), &esp); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal external-secret-principal: %w", err)
+		}
+		return &esp, nil
+	}
+
+	esp, err := c.getExternalSecretPrincipalFromKeyring()
+	if err != nil {
+		return nil, err
+	}
+
+	secretData, err := json.Marshal(esp)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal external-secret-principal: %w", err)
+	}
+
+	if err := c.setSecret("external-secret-principal", string(secretData)); err != nil {
+		return nil, fmt.Errorf("failed to store external-secret-principal in vault: %w", err)
+	}
+
+	return esp, nil
+}
+
+func (c *Client) getExternalSecretPrincipalFromKeyring() (*ExternalSecretPrincipal, error) {
+	clientID, err := local.GetClientID()
+	if err != nil {
+		return nil, err
+	}
+	if clientID == "" {
+		return nil, fmt.Errorf("client id not found in keyring")
+	}
+
+	tenantID, err := local.GetTenantID()
+	if err != nil {
+		return nil, err
+	}
+	if tenantID == "" {
+		return nil, fmt.Errorf("tenant id not found in keyring")
+	}
+
+	clientSecret, err := local.GetClientSecret()
+	if err != nil {
+		return nil, err
+	}
+	if clientSecret == "" {
+		return nil, fmt.Errorf("client secret not found in keyring")
+	}
+
+	return &ExternalSecretPrincipal{
+		ClientID:     clientID,
+		TenantID:     tenantID,
+		ClientSecret: clientSecret,
+	}, nil
 }
 
 func (c *Client) setSecret(name, value string) error {

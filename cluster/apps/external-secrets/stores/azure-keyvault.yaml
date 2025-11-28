@@ -1,0 +1,23 @@
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: azure-keyvault
+spec:
+  provider:
+    azurekv:
+      vaultUrl: "https://batcomputer-kv.vault.azure.net"
+      authType: ServicePrincipal
+      tenantId: "07b5a385-359b-4fe8-9d40-77064bd62648"
+      authSecretRef:
+        clientId:
+          name: azure-secret
+          namespace: core-external-secrets
+          key: client-id
+        clientSecret:
+          name: azure-secret
+          namespace: core-external-secrets
+          key: client-secret
+        tenantId:
+          name: azure-secret
+          namespace: core-external-secrets
+          key: tenant-id
