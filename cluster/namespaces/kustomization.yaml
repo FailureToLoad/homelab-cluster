@@ -6,3 +6,4 @@ resources:
   - core-external-secrets.yaml
   - core-tailscale.yaml
   - core-argocd.yaml
+  - core-metrics-server.yaml

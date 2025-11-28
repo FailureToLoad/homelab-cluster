@@ -7,3 +7,4 @@ resources:
   - core-cert-manager.yaml
   - core-tailscale.yaml
   - core-argocd.yaml
+  - core-metrics-server.yaml
