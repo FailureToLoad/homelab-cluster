@@ -1,4 +1,4 @@
-.PHONY: vaultmaker talosconfigs freshtalosconfigs ciliumsecrets cilium cert-manager azuresecrets external-secrets
+.PHONY: vaultmaker talosconfigs freshtalosconfigs ciliumsecrets cilium cert-manager azuresecrets external-secrets tailscale
 
 vaultmaker:
 	cd homelabtools && go run ./cmd/vaultmaker/main.go
@@ -32,3 +32,8 @@ external-secrets:
 	kubectl kustomize cluster/apps/external-secrets --enable-helm | kubectl apply --server-side -f -
 	kubectl rollout status deployment/external-secrets -n core-external-secrets --timeout=120s
 	kubectl apply -k cluster/apps/external-secrets/stores --server-side
+
+tailscale:
+	kubectl apply -k cluster/namespaces --server-side
+	kubectl kustomize cluster/apps/tailscale --enable-helm | kubectl apply --server-side -f -
+	kubectl rollout status deployment/operator -n core-tailscale --timeout=120s

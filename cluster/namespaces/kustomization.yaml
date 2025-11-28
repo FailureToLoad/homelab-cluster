@@ -4,6 +4,7 @@ resources:
   - core-cert-manager.yaml
   - core-cilium.yaml
   - core-external-secrets.yaml
+  - core-tailscale.yaml
 secretGenerator:
   - name: azure-secret
     namespace: core-external-secrets
