@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: core-cloudflared
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cloudflared-tunnel-token
+  namespace: core-cloudflared
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  target:
+    name: cloudflared-tunnel-token
+    creationPolicy: Owner
+  data:
+    - secretKey: token
+      remoteRef:
+        key: cloudflared-tunnel-token
