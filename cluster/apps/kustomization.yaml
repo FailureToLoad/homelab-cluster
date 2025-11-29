@@ -19,4 +19,5 @@ resources:
   - core-postgres.yaml
   - core-lldap.yaml
   - core-authelia.yaml
+  - core-image-updater.yaml
   - datamonster.yaml
