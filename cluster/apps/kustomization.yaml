@@ -19,3 +19,4 @@ resources:
   - core-postgres.yaml
   - core-lldap.yaml
   - core-authelia.yaml
+  - datamonster.yaml

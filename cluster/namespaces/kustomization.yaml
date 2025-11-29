@@ -14,3 +14,4 @@ resources:
   - core-valkey.yaml
   - core-postgres.yaml
   - core-auth.yaml
+  - datamonster.yaml

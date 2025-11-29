@@ -1,0 +1,14 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: datamonster
+  namespace: datamonster
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`data-monster.net`)
+      kind: Rule
+      services:
+        - name: datamonster
+          port: 80
