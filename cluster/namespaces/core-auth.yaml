@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: core-auth
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: lldap-secrets
+  namespace: core-auth
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  target:
+    name: lldap-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: LLDAP_JWT_SECRET
+      remoteRef:
+        key: lldap-jwt-secret
+    - secretKey: LLDAP_KEY_SEED
+      remoteRef:
+        key: lldap-key-seed
+    - secretKey: LLDAP_LDAP_USER_PASS
+      remoteRef:
+        key: lldap-admin-password
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: authelia-secrets
+  namespace: core-auth
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  target:
+    name: authelia-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: SESSION_ENCRYPTION_KEY
+      remoteRef:
+        key: authelia-session-key
+    - secretKey: STORAGE_ENCRYPTION_KEY
+      remoteRef:
+        key: authelia-storage-key
+    - secretKey: IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET
+      remoteRef:
+        key: authelia-jwt-secret
+    - secretKey: LDAP_PASSWORD
+      remoteRef:
+        key: lldap-admin-password

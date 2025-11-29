@@ -9,3 +9,6 @@ resources:
   - core-metrics-server.yaml
   - core-longhorn.yaml
   - core-observe.yaml
+  - core-valkey.yaml
+  - core-postgres.yaml
+  - core-auth.yaml

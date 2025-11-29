@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: core-postgres
+  namespace: core-argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cloudnative-pg
+      targetRevision: 0.26.1
+      helm:
+        releaseName: cnpg
+        valueFiles:
+          - $values/cluster/resources/postgres/values.yaml
+    - repoURL: https://github.com/FailureToLoad/homelab-cluster.git
+      targetRevision: HEAD
+      ref: values
+    - repoURL: https://github.com/FailureToLoad/homelab-cluster.git
+      targetRevision: HEAD
+      path: cluster/resources/postgres
+      directory:
+        exclude: "{values.yaml}"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: core-postgres
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

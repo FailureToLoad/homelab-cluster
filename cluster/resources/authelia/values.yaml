@@ -1,0 +1,112 @@
+pod:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+ingress:
+  enabled: false
+
+configMap:
+  server:
+    port: 9091
+  
+  log:
+    level: info
+  
+  telemetry:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+  
+  authentication_backend:
+    ldap:
+      enabled: true
+      address: ldap://lldap.core-auth.svc.cluster.local:389
+      implementation: custom
+      start_tls: false
+      base_dn: dc=homelab,dc=local
+      additional_users_dn: ou=people
+      users_filter: (&({username_attribute}={input})(objectClass=person))
+      additional_groups_dn: ou=groups
+      groups_filter: (member={dn})
+      user: uid=admin,ou=people,dc=homelab,dc=local
+      password:
+        secret_name: authelia-secrets
+        path: authentication.ldap.password.txt
+      attributes:
+        distinguished_name: ""
+        username: uid
+        display_name: cn
+        mail: mail
+        member_of: memberOf
+        group_name: cn
+  
+  session:
+    cookies:
+      - domain: 'zonkey-broadnose.ts.net'
+        authelia_url: 'https://auth.zonkey-broadnose.ts.net'
+    redis:
+      enabled: true
+      host: valkey.core-valkey.svc.cluster.local
+      port: 6379
+      password:
+        disabled: true
+    encryption_key:
+      secret_name: authelia-secrets
+      path: session.encryption.key
+  
+  storage:
+    postgres:
+      enabled: true
+      address: tcp://authelia-db-rw.core-auth.svc.cluster.local:5432
+      database: authelia
+      username: authelia
+      password:
+        secret_name: authelia-db-app
+        path: storage.postgres.password.txt
+    encryption_key:
+      secret_name: authelia-secrets
+      path: storage.encryption.key
+  
+  access_control:
+    default_policy: one_factor
+    rules:
+      - domain: "*.zonkey-broadnose.ts.net"
+        policy: one_factor
+  
+  notifier:
+    filesystem:
+      enabled: true
+      filename: /config/notification.txt
+  
+  identity_validation:
+    reset_password:
+      secret:
+        secret_name: authelia-secrets
+        path: identity_validation.reset_password.jwt.hmac.key
+
+secret:
+  existingSecret: authelia-secrets
+  additionalSecrets:
+    authelia-secrets:
+      items:
+        - key: SESSION_ENCRYPTION_KEY
+          path: session.encryption.key
+        - key: STORAGE_ENCRYPTION_KEY
+          path: storage.encryption.key
+        - key: IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET
+          path: identity_validation.reset_password.jwt.hmac.key
+        - key: LDAP_PASSWORD
+          path: authentication.ldap.password.txt
+    authelia-db-app:
+      items:
+        - key: password
+          path: storage.postgres.password.txt
+
+persistence:
+  enabled: false

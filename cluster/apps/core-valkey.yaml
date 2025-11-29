@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: valkey
+  namespace: core-argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  destination:
+    name: in-cluster
+    namespace: core-valkey
+  sources:
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      path: cluster/resources/valkey
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+      allowEmpty: true
+    syncOptions:
+      - ServerSideApply=true

@@ -13,3 +13,7 @@ resources:
   - core-loki.yaml
   - core-prometheus.yaml
   - core-alloy.yaml
+  - core-valkey.yaml
+  - core-postgres.yaml
+  - core-lldap.yaml
+  - core-authelia.yaml

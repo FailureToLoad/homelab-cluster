@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: authelia
+  namespace: core-auth
+spec:
+  ingressClassName: tailscale
+  rules:
+    - host: auth
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: authelia
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - auth

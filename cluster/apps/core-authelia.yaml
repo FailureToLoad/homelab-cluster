@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: authelia
+  namespace: core-argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: default
+  destination:
+    name: in-cluster
+    namespace: core-auth
+  sources:
+    - repoURL: https://charts.authelia.com
+      chart: authelia
+      targetRevision: 0.10.49
+      helm:
+        releaseName: authelia
+        valueFiles:
+          - $values/cluster/resources/authelia/values.yaml
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      ref: values
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      path: cluster/resources/authelia
+      directory:
+        exclude: "{values.yaml}"
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+      allowEmpty: true
+    syncOptions:
+      - ServerSideApply=true
