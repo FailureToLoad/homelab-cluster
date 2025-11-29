@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: origin-ca-issuer
+  namespace: core-argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  destination:
+    name: in-cluster
+    namespace: core-networking
+  sources:
+    - repoURL: oci://ghcr.io/cloudflare/origin-ca-issuer-charts/origin-ca-issuer
+      chart: origin-ca-issuer
+      targetRevision: 0.5.10
+      helm:
+        releaseName: origin-ca-issuer
+        valueFiles:
+          - $values/cluster/resources/origin-ca-issuer/values.yaml
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+      allowEmpty: true
+    syncOptions:
+      - ServerSideApply=true

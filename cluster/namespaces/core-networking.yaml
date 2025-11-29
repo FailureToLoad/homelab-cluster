@@ -20,3 +20,21 @@ spec:
     - secretKey: token
       remoteRef:
         key: cloudflared-tunnel-token
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cloudflare-origin-ca-token
+  namespace: core-networking
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  target:
+    name: cloudflare-origin-ca-token
+    creationPolicy: Owner
+  data:
+    - secretKey: token
+      remoteRef:
+        key: cloudflare-origin-ca-token

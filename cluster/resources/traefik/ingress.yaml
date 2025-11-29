@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: traefik-dashboard
-  namespace: core-traefik
+  namespace: core-networking
 spec:
   ingressClassName: tailscale
   rules:
