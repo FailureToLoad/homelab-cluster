@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/failuretoload/homelabtools/cluster"
-	"github.com/failuretoload/homelabtools/vault"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -100,7 +99,7 @@ func TestNewNodeConfig(t *testing.T) {
 }
 
 func TestNewConfig(t *testing.T) {
-	validSecrets := vault.ClusterSecrets{
+	validSecrets := cluster.Secrets{
 		Token:                     "test-token",
 		OSCert:                    "test-os-cert",
 		OSKey:                     "test-os-key",
@@ -120,13 +119,13 @@ func TestNewConfig(t *testing.T) {
 		ECTDKey:                   "test-etcd-key",
 	}
 
-	emptySecrets := vault.ClusterSecrets{}
+	emptySecrets := cluster.Secrets{}
 
 	tests := []struct {
 		name             string
 		controlPlaneArgs []any
 		workers          [][]any
-		secrets          vault.ClusterSecrets
+		secrets          cluster.Secrets
 		expectError      bool
 		errorMsg         string
 	}{
@@ -163,7 +162,7 @@ func TestNewConfig(t *testing.T) {
 			workers: [][]any{
 				{"worker1", "192.168.1.101", 100, 200},
 			},
-			secrets:     vault.ClusterSecrets{},
+			secrets:     cluster.Secrets{},
 			expectError: true,
 			errorMsg:    "token is required",
 		},
@@ -173,7 +172,7 @@ func TestNewConfig(t *testing.T) {
 			workers: [][]any{
 				{"worker1", "192.168.1.101", 100, 200},
 			},
-			secrets:     vault.ClusterSecrets{},
+			secrets:     cluster.Secrets{},
 			expectError: true,
 			errorMsg:    "token is required",
 		},
@@ -225,7 +224,7 @@ func TestNewConfig(t *testing.T) {
 			workers: [][]any{
 				{"worker1", "192.168.1.101", 100, 200},
 			},
-			secrets:     vault.ClusterSecrets{},
+			secrets:     cluster.Secrets{},
 			expectError: true,
 			errorMsg:    "token is required",
 		},
@@ -270,7 +269,7 @@ func TestNewConfig(t *testing.T) {
 }
 
 func TestGenerateConfigs(t *testing.T) {
-	validSecrets := vault.ClusterSecrets{
+	validSecrets := cluster.Secrets{
 		Token:                     "test-token",
 		OSCert:                    "test-os-cert",
 		OSKey:                     "test-os-key",

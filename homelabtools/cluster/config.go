@@ -3,18 +3,16 @@ package cluster
 import (
 	"errors"
 	"os"
-
-	"github.com/failuretoload/homelabtools/vault"
 )
 
 type Config struct {
 	clusterName  string
 	controlPlane NodeConfig
 	workers      []NodeConfig
-	secrets      vault.ClusterSecrets
+	secrets      Secrets
 }
 
-func NewConfig(clusterName string, cp NodeConfig, s vault.ClusterSecrets, w ...NodeConfig) (Config, error) {
+func NewConfig(clusterName string, cp NodeConfig, s Secrets, w ...NodeConfig) (Config, error) {
 	cc := Config{
 		clusterName:  clusterName,
 		controlPlane: cp,

@@ -11,6 +11,7 @@ import (
 
 	"github.com/failuretoload/homelabtools/azure"
 	"github.com/failuretoload/homelabtools/local"
+	"github.com/failuretoload/homelabtools/secret"
 	"github.com/fatih/color"
 )
 
@@ -202,7 +203,7 @@ func (eb *EnvironmentBuilder) createResourceGroup(ctx context.Context) error {
 		return err
 	}
 
-	if err := local.SetResourceGroupName(eb.resourceGroup); err != nil {
+	if err := local.SetKeyringValue(secret.RGName, eb.resourceGroup); err != nil {
 		return fmt.Errorf("failed to store azure-rg-name in keyring: %w", err)
 	}
 
@@ -212,11 +213,11 @@ func (eb *EnvironmentBuilder) createResourceGroup(ctx context.Context) error {
 func (eb *EnvironmentBuilder) createKeyVault(ctx context.Context) error {
 	vaultName, kvURL, err := eb.client.CreateKeyVault(ctx, eb.resourceGroup, eb.keyVaultName)
 
-	if err := local.SetKeyvaultName(vaultName); err != nil {
+	if err := local.SetKeyringValue(secret.VaultName, vaultName); err != nil {
 		slog.Warn(fmt.Sprintf("unable to set azure-keyvault-name, manually run: secret-tool store --label='Azure Key Vault Name' service homelab username azure-keyvault-name <<< \"%s\"", eb.keyVaultName))
 	}
 
-	if err := local.SetKeyvaultURL(kvURL); err != nil {
+	if err := local.SetKeyringValue(secret.VaultURL, kvURL); err != nil {
 		slog.Warn(fmt.Sprintf("unable to set azure-keyvault-url, manually run: secret-tool store --label='Azure Key Vault URL' service homelab username azure-keyvault-url <<< \"%s\"", kvURL))
 	}
 
@@ -235,15 +236,15 @@ func (eb *EnvironmentBuilder) createServicePrincipal(ctx context.Context) error 
 		return err
 	}
 
-	if err := local.SetClientID(creds.AppID); err != nil {
+	if err := local.SetKeyringValue(secret.ClientID, creds.AppID); err != nil {
 		return fmt.Errorf("failed to store azure-client-id in keyring: %w", err)
 	}
 
-	if err := local.SetTenantID(creds.TenantID); err != nil {
+	if err := local.SetKeyringValue(secret.TenantID, creds.TenantID); err != nil {
 		return fmt.Errorf("failed to store azure-tenant-id in keyring: %w", err)
 	}
 
-	if err := local.SetClientSecret(creds.ClientSecret); err != nil {
+	if err := local.SetKeyringValue(secret.ClientSecret, creds.ClientSecret); err != nil {
 		return fmt.Errorf("failed to store azure-client-secret in keyring: %w", err)
 	}
 
