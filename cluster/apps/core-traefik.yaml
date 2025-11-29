@@ -9,7 +9,7 @@ spec:
   project: default
   destination:
     name: in-cluster
-    namespace: core-traefik
+    namespace: core-networking
   sources:
     - repoURL: https://traefik.github.io/charts
       chart: traefik

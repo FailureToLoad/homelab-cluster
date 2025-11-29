@@ -13,7 +13,7 @@ spec:
       path: cluster/resources/cloudflared
   destination:
     name: in-cluster
-    namespace: core-cloudflared
+    namespace: core-networking
   syncPolicy:
     automated:
       prune: false

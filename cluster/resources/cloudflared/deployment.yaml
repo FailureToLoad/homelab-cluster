@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cloudflared
-  namespace: core-cloudflared
+  namespace: core-networking
 spec:
   replicas: 2
   selector:
