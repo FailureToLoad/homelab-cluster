@@ -22,6 +22,11 @@ ports:
     expose:
       default: true
     exposedPort: 80
+    forwardedHeaders:
+      trustedIPs:
+        - "10.0.0.0/8"
+        - "172.16.0.0/12"
+        - "192.168.0.0/16"
   websecure:
     port: 8443
     expose:
@@ -29,6 +34,11 @@ ports:
     exposedPort: 443
     tls:
       enabled: true
+    forwardedHeaders:
+      trustedIPs:
+        - "10.0.0.0/8"
+        - "172.16.0.0/12"
+        - "192.168.0.0/16"
   traefik:
     port: 8080
     expose:

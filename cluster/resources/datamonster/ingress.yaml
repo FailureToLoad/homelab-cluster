@@ -9,6 +9,9 @@ spec:
   routes:
     - match: Host(`data-monster.net`)
       kind: Rule
+      middlewares:
+        - name: authelia-forwardauth
+          namespace: core-networking
       services:
         - name: datamonster
           namespace: datamonster

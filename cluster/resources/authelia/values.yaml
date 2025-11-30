@@ -49,7 +49,9 @@ configMap:
   session:
     cookies:
       - domain: 'zonkey-broadnose.ts.net'
-        authelia_url: 'https://auth.zonkey-broadnose.ts.net'
+        subdomain: 'auth'
+      - domain: 'data-monster.net'
+        subdomain: 'auth'
     redis:
       enabled: true
       host: valkey.core-valkey.svc.cluster.local
@@ -77,6 +79,10 @@ configMap:
     default_policy: one_factor
     rules:
       - domain: "*.zonkey-broadnose.ts.net"
+        policy: one_factor
+      - domain: "data-monster.net"
+        policy: one_factor
+      - domain: "*.data-monster.net"
         policy: one_factor
   
   notifier:
