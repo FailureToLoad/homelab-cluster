@@ -10,3 +10,4 @@ resources:
   - core-metrics-server.yaml
   - core-longhorn.yaml
   - core-observe.yaml
+  - datamonster.yaml
