@@ -1,0 +1,20 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: datamonster-updater
+  namespace: core-argocd
+spec:
+  namespace: core-argocd
+  writeBackConfig:
+    method: git
+    gitConfig:
+      branch: main
+      writeBackTarget: kustomization
+  applicationRefs:
+    - namePattern: "datamonster"
+      images:
+        - alias: datamonster
+          imageName: batcomputer-gse9eyezfzhubya2.azurecr.io/datamonster-web
+          commonUpdateSettings:
+            updateStrategy: digest
+            pullSecret: datamonster/acr-credentials

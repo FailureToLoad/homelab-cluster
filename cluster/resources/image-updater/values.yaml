@@ -1,0 +1,15 @@
+config:
+  log.level: info
+  registries:
+    - name: Azure Container Registry
+      prefix: batcomputer-gse9eyezfzhubya2.azurecr.io
+      api_url: https://batcomputer-gse9eyezfzhubya2.azurecr.io
+      credentials: pullsecret:datamonster/acr-credentials
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi

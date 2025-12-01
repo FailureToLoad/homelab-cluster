@@ -16,3 +16,4 @@ resources:
   - core-prometheus.yaml
   - core-alloy.yaml
   - datamonster.yaml
+  - core-image-updater.yaml
