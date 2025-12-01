@@ -6,6 +6,7 @@ resources:
   - core-external-secrets.yaml
   - core-cert-manager.yaml
   - core-traefik.yaml
+  - core-cloudflared.yaml
   - core-tailscale.yaml
   - core-argocd.yaml
   - core-metrics-server.yaml
