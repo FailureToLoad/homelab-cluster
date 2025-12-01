@@ -1,8 +1,8 @@
-package vault
+package cluster
 
 import "errors"
 
-type ClusterSecrets struct {
+type Secrets struct {
 	Token                     string `json:"token"`
 	OSCert                    string `json:"osCert"`
 	OSKey                     string `json:"osKey"`
@@ -22,7 +22,7 @@ type ClusterSecrets struct {
 	ECTDKey                   string `json:"etcdKey"`
 }
 
-func (cs ClusterSecrets) Validate() error {
+func (cs Secrets) Validate() error {
 	var err error
 	if cs.Token == "" {
 		err = errors.Join(err, errors.New("token is required"))
@@ -74,61 +74,6 @@ func (cs ClusterSecrets) Validate() error {
 	}
 	if cs.ECTDKey == "" {
 		err = errors.Join(err, errors.New("etcd key is required"))
-	}
-
-	return err
-}
-
-type CiliumSecrets struct {
-	CiliumCACRT string `json:"ciliumCaCrt"`
-	CiliumCAKey string `json:"ciliumCaKey"`
-}
-
-func (hs CiliumSecrets) Validate() error {
-	var err error
-	if hs.CiliumCACRT == "" {
-		err = errors.Join(err, errors.New("cilium crt is required"))
-	}
-	if hs.CiliumCAKey == "" {
-		err = errors.Join(err, errors.New("cilium key is required"))
-	}
-
-	return err
-}
-
-type HubbleSecrets struct {
-	HubbleTLSCRT string `json:"hubbleTlsCrt"`
-	HubbleTLSKey string `json:"hubbleTlsKey"`
-}
-
-func (esp HubbleSecrets) Validate() error {
-	var err error
-	if esp.HubbleTLSCRT == "" {
-		err = errors.Join(err, errors.New("hubble tls crt is required"))
-	}
-	if esp.HubbleTLSKey == "" {
-		err = errors.Join(err, errors.New("hubble tls key is required"))
-	}
-
-	return err
-}
-
-type ExternalSecretPrincipal struct {
-	ClientID     string `json:"clientId"`
-	ClientSecret string `json:"clientSecret"`
-	TenantID     string `json:"tenantId"`
-}
-
-func (esp ExternalSecretPrincipal) Validate() error {
-	var err error
-	if esp.ClientID == "" {
-		err = errors.Join(err, errors.New("client id is required"))
-	}
-	if esp.ClientSecret == "" {
-		err = errors.Join(err, errors.New("client secret is required"))
-	}
-	if esp.TenantID == "" {
-		err = errors.Join(err, errors.New("tenant id is required"))
 	}
 
 	return err

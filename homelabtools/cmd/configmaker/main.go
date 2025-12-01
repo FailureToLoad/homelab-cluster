@@ -1,8 +1,7 @@
 package main
 
 import (
-	"context"
-	"flag"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -10,8 +9,9 @@ import (
 	"time"
 
 	"github.com/failuretoload/homelabtools/cluster"
-	"github.com/failuretoload/homelabtools/local"
-	"github.com/failuretoload/homelabtools/vault"
+	"github.com/siderolabs/talos/pkg/machinery/config"
+	"github.com/siderolabs/talos/pkg/machinery/config/generate/secrets"
+	"github.com/siderolabs/talos/pkg/machinery/role"
 )
 
 const (
@@ -20,15 +20,12 @@ const (
 )
 
 func main() {
-	overwrite := flag.Bool("overwrite", false, "overwrite existing cluster secrets and regenerate")
-	flag.Parse()
-
-	if err := run(*overwrite); err != nil {
+	if err := run(); err != nil {
 		log.Fatalf("error: %v\n", err)
 	}
 }
 
-func run(overwrite bool) error {
+func run() error {
 	subID := os.Getenv("AZURE_SUBSCRIPTION_ID")
 	if subID == "" {
 		return fmt.Errorf("AZURE_SUBSCRIPTION_ID not set")
@@ -58,23 +55,11 @@ func run(overwrite bool) error {
 	if err := os.MkdirAll(talosDir, 0o700); err != nil {
 		return err
 	}
-
-	vaultURL, err := local.GetKeyvaultURL()
-	if err != nil {
-		return err
-	}
-
-	ctx := context.Background()
-	vaultClient, err := vault.NewClient(ctx, vaultURL)
-	if err != nil {
-		return fmt.Errorf("failed to create vault client: %w", err)
-	}
-
 	if err := performBackup(talosDir); err != nil {
 		return err
 	}
 
-	clusterSecrets, err := vaultClient.GetClusterSecretsWithOverwrite(overwrite)
+	clusterSecrets, err := getClusterSecrets()
 	if err != nil {
 		return fmt.Errorf("failed to get cluster secrets: %w", err)
 	}
@@ -194,4 +179,55 @@ func moveGlob(root, pattern, dstDir string) {
 		target := filepath.Join(dstDir, filepath.Base(f))
 		os.Rename(f, target)
 	}
+}
+
+func getClusterSecrets() (*cluster.Secrets, error) {
+	clusterSecretsPath := filepath.Join(os.Getenv("HOME"), ".talos", "cluster.json")
+	if data, err := os.ReadFile(clusterSecretsPath); err == nil {
+		var cs cluster.Secrets
+		if err := json.Unmarshal(data, &cs); err == nil {
+			return &cs, nil
+		}
+	}
+
+	bundle, err := generateClusterSecrets()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate cluster secrets: %w", err)
+	}
+
+	adminCert, err := bundle.GenerateTalosAPIClientCertificate(role.MakeSet(role.Admin))
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate admin certificate: %w", err)
+	}
+
+	clusterSecrets := &cluster.Secrets{
+		Token:                     string(bundle.TrustdInfo.Token),
+		OSCert:                    string(bundle.Certs.OS.Crt),
+		OSKey:                     string(bundle.Certs.OS.Key),
+		OSAdminCert:               string(adminCert.Crt),
+		OSAdminKey:                string(adminCert.Key),
+		ClusterID:                 bundle.Cluster.ID,
+		ClusterSecret:             bundle.Cluster.Secret,
+		TrustdToken:               string(bundle.TrustdInfo.Token),
+		BootstrapToken:            string(bundle.Secrets.BootstrapToken),
+		SecretBoxEncryptionSecret: bundle.Secrets.SecretboxEncryptionSecret,
+		K8SCert:                   string(bundle.Certs.K8s.Crt),
+		K8SKey:                    string(bundle.Certs.K8s.Key),
+		K8SAggregatorCert:         string(bundle.Certs.K8sAggregator.Crt),
+		K8SAggregatorKey:          string(bundle.Certs.K8sAggregator.Key),
+		K8SServiceAccount:         string(bundle.Certs.K8sServiceAccount.Key),
+		ECTDCert:                  string(bundle.Certs.Etcd.Crt),
+		ECTDKey:                   string(bundle.Certs.Etcd.Key),
+	}
+
+	return clusterSecrets, nil
+}
+
+func generateClusterSecrets() (*secrets.Bundle, error) {
+	version, _ := config.ParseContractFromVersion("v1.6.2")
+	bundle, err := secrets.NewBundle(secrets.NewClock(), version)
+	if err != nil {
+		return nil, err
+	}
+	return bundle, nil
 }
