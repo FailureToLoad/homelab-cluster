@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: core-argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  destination:
+    name: in-cluster
+    namespace: core-networking
+  sources:
+    - repoURL: https://traefik.github.io/charts
+      chart: traefik
+      targetRevision: 37.4.0
+      helm:
+        releaseName: traefik
+        valueFiles:
+          - $values/cluster/resources/traefik/values.yaml
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      ref: values
+    - repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+      targetRevision: main
+      path: cluster/resources/traefik
+      directory:
+        exclude: "{values.yaml}"
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+      allowEmpty: true
+    syncOptions:
+      - ServerSideApply=true
