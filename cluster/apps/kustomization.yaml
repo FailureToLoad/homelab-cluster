@@ -17,3 +17,5 @@ resources:
   - core-alloy.yaml
   - datamonster.yaml
   - core-image-updater.yaml
+  - core-origin-ca-issuer-crds.yaml
+  - core-origin-ca-issuer.yaml

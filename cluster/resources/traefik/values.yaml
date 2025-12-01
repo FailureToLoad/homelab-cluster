@@ -28,11 +28,16 @@ ports:
       default: true
     exposedPort: 443
     tls:
-      enabled: false
+      enabled: true
   traefik:
     port: 8080
     expose:
       default: false
+
+tlsStore:
+  default:
+    defaultCertificate:
+      secretName: data-monster-wildcard-tls
 
 api:
   dashboard: true
