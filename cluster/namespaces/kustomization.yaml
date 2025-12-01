@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - core-cert-manager.yaml
   - core-cilium.yaml
+  - core-postgres.yaml
   - core-external-secrets.yaml
   - core-tailscale.yaml
   - core-networking.yaml

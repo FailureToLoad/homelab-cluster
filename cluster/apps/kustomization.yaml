@@ -11,6 +11,7 @@ resources:
   - core-argocd.yaml
   - core-metrics-server.yaml
   - core-longhorn.yaml
+  - core-postgres.yaml
   - core-grafana.yaml
   - core-loki.yaml
   - core-prometheus.yaml
