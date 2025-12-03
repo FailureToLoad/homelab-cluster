@@ -1,2 +1,5 @@
+commonLabels:
+  app.kubernetes.io/name: cloudnative-pg
+
 crds:
   create: true

@@ -3,15 +3,20 @@ kind: Deployment
 metadata:
   name: datamonster
   namespace: datamonster
+  labels:
+    app.kubernetes.io/name: datamonster
+    app.kubernetes.io/component: web
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: datamonster
+      app.kubernetes.io/name: datamonster
+      app.kubernetes.io/component: web
   template:
     metadata:
       labels:
-        app: datamonster
+        app.kubernetes.io/name: datamonster
+        app.kubernetes.io/component: web
     spec:
       imagePullSecrets:
         - name: acr-credentials
@@ -46,9 +51,13 @@ kind: Service
 metadata:
   name: datamonster
   namespace: datamonster
+  labels:
+    app.kubernetes.io/name: datamonster
+    app.kubernetes.io/component: web
 spec:
   selector:
-    app: datamonster
+    app.kubernetes.io/name: datamonster
+    app.kubernetes.io/component: web
   ports:
     - name: http
       port: 80

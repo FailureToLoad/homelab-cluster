@@ -13,4 +13,5 @@ spec:
         - name: datamonster
           namespace: datamonster
           port: 80
-  tls: {}
+  tls:
+    secretName: data-monster-wildcard-tls

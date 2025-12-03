@@ -1,3 +1,6 @@
+commonLabels:
+  app.kubernetes.io/name: argocd-image-updater
+
 config:
   log.level: info
   registries:
