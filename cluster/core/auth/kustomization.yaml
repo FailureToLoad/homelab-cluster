@@ -4,3 +4,13 @@ resources:
   - namespace.yaml
   - resources/lldap.yaml
   - resources/ingress.yaml
+  - resources/authelia-ingress.yaml
+helmGlobals:
+  chartHome: charts/authelia
+helmCharts:
+  - name: authelia
+    repo: https://charts.authelia.com
+    version: 0.9.5
+    releaseName: authelia
+    namespace: core-auth
+    valuesFile: resources/authelia-values.yaml

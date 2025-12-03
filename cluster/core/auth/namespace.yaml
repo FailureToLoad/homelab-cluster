@@ -29,3 +29,44 @@ spec:
     - secretKey: LLDAP_KEY_SEED
       remoteRef:
         key: lldap-key-seed
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: authelia-secrets
+  namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  target:
+    name: authelia-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: jwt_secret
+      remoteRef:
+        key: authelia-jwt-secret
+    - secretKey: session_secret
+      remoteRef:
+        key: authelia-session-secret
+    - secretKey: storage_encryption_key
+      remoteRef:
+        key: authelia-storage-encryption-key
+    - secretKey: oidc_hmac_secret
+      remoteRef:
+        key: authelia-oidc-hmac-secret
+    - secretKey: oidc_rsa_private_key
+      remoteRef:
+        key: authelia-oidc-rsa-private-key
+    - secretKey: oidc_ec_private_key
+      remoteRef:
+        key: authelia-oidc-ec-private-key
+    - secretKey: ldap_password
+      remoteRef:
+        key: authelia-ldap-password
+    - secretKey: datamonster_client_secret
+      remoteRef:
+        key: authelia-datamonster-client-secret
