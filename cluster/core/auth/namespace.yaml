@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: core-auth
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: lldap-secrets
+  namespace: core-auth
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  target:
+    name: lldap-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: LLDAP_JWT_SECRET
+      remoteRef:
+        key: lldap-jwt-secret
+    - secretKey: LLDAP_LDAP_USER_DN
+      remoteRef:
+        key: lldap-admin-user
+    - secretKey: LLDAP_LDAP_USER_PASS
+      remoteRef:
+        key: lldap-admin-password
+    - secretKey: LLDAP_KEY_SEED
+      remoteRef:
+        key: lldap-key-seed

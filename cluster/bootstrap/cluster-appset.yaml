@@ -77,11 +77,10 @@ spec:
       syncPolicy:
         automated:
           prune: false
-          selfHeal: true
+          selfHeal: false
           allowEmpty: true
         syncOptions:
           - ServerSideApply=true
           - RespectIgnoreDifferences=true
-          - ApplyOutOfSyncOnly=true
   syncPolicy:
     applicationsSync: create-update
