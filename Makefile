@@ -10,8 +10,8 @@ freshtalosconfigs:
 	cd homelabtools && go run ./cmd/configmaker/main.go -overwrite
 
 azuresecrets:
-	mkdir -p cluster/bootstrap/secrets/azure
-	SECRETS_PATH=$$(realpath ./cluster/bootstrap/secrets/azure) && cd homelabtools && go run ./cmd/azuresecrets $$SECRETS_PATH
+	mkdir -p bootstrap/secrets/azure
+	SECRETS_PATH=$$(realpath ./bootstrap/secrets/azure) && cd homelabtools && go run ./cmd/azuresecrets $$SECRETS_PATH
 
 bootstrap:
-	kubectl apply -f /home/dm/Repos/homelab-cluster/cluster/bootstrap/cluster-appset.yaml
+	kubectl apply -f /home/dm/Repos/homelab-cluster/bootstrap/cluster-appset.yaml

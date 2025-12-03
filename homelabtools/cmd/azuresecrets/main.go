@@ -36,7 +36,7 @@ func (esp ExternalSecretPrincipal) Validate() error {
 }
 
 func main() {
-	secretPath := flag.String("secretpath", "../cluster/bootstrap/secrets/azure", "directory to generate secrets in")
+	secretPath := flag.String("secretpath", "../bootstrap/secrets/azure", "directory to generate secrets in")
 	flag.Parse()
 	if err := run(*secretPath); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
