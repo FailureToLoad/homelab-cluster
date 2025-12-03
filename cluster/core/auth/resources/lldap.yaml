@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: lldap-data
   namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   accessModes:
     - ReadWriteOnce
@@ -16,6 +18,8 @@ kind: ConfigMap
 metadata:
   name: lldap-config
   namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 data:
   LLDAP_LDAP_BASE_DN: "dc=homelab,dc=local"
 ---
@@ -24,6 +28,8 @@ kind: Deployment
 metadata:
   name: lldap
   namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   replicas: 1
   strategy:
@@ -60,6 +66,8 @@ kind: Service
 metadata:
   name: lldap
   namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   selector:
     app.kubernetes.io/name: lldap

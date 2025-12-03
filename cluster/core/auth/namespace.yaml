@@ -2,12 +2,16 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 ---
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: lldap-secrets
   namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   refreshInterval: 1h
   secretStoreRef:
@@ -36,6 +40,7 @@ metadata:
   name: authelia-secrets
   namespace: core-auth
   annotations:
+    argocd.argoproj.io/sync-wave: "1"
     argocd.argoproj.io/sync-options: Replace=true
 spec:
   refreshInterval: 1h

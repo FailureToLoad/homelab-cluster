@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: lldap
   namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   ingressClassName: tailscale
   defaultBackend:
