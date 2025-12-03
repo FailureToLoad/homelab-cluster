@@ -1,0 +1,87 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster
+  namespace: core-argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+        revision: main
+        directories:
+          - path: cluster/platform/*
+        values:
+          tier: "1"
+    - git:
+        repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+        revision: main
+        directories:
+          - path: cluster/core/*
+        values:
+          tier: "2"
+    - git:
+        repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+        revision: main
+        directories:
+          - path: cluster/observe/*
+        values:
+          tier: "3"
+    - git:
+        repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+        revision: main
+        directories:
+          - path: cluster/app/*
+        values:
+          tier: "4"
+  strategy:
+    type: RollingSync
+    deletionOrder: Reverse
+    rollingSync:
+      steps:
+        - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+                - "1"
+        - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+                - "2"
+        - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+                - "3"
+        - matchExpressions:
+            - key: tier
+              operator: In
+              values:
+                - "4"
+  template:
+    metadata:
+      name: "{{ .path.basename }}"
+      labels:
+        tier: "{{ .values.tier }}"
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:FailureToLoad/homelab-cluster.git
+        targetRevision: main
+        path: "{{ .path.path }}"
+      destination:
+        name: in-cluster
+        namespace: core-argocd
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+          allowEmpty: true
+        syncOptions:
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+          - ApplyOutOfSyncOnly=true
+  syncPolicy:
+    applicationsSync: create-update

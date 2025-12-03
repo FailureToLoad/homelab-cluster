@@ -1,0 +1,38 @@
+configs:
+  params:
+    server.disable.auth: true
+    server.insecure: true
+    applicationsetcontroller.enable.progressive.syncs: true
+    controller.diff.server.side: "true"
+
+  cm:
+    kustomize.buildOptions: --enable-helm
+    resource.customizations.ignoreDifferences.apiextensions.k8s.io_CustomResourceDefinition: |
+      jsonPointers:
+      - /metadata/generation
+    resource.customizations.ignoreDifferences.apps_StatefulSet: |
+      jqPathExpressions:
+      - .spec.volumeClaimTemplates[]?.metadata.creationTimestamp
+    resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret: |
+      jqPathExpressions:
+      - .spec.data[]?.remoteRef.conversionStrategy
+      - .spec.data[]?.remoteRef.decodingStrategy
+      - .spec.data[]?.remoteRef.metadataPolicy
+      - .spec.target.deletionPolicy
+      - .spec.refreshInterval
+    resource.customizations.ignoreDifferences.external-secrets.io_ClusterSecretStore: |
+      jsonPointers:
+      - /spec/provider/azurekv/environmentType
+      - /spec/provider/azurekv/useAzureSdk
+
+  secret:
+    createSecret: true
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
+
+redisSecretInit:
+  enabled: true

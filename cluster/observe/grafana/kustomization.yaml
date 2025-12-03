@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - resources/ingress.yaml
+helmGlobals:
+  chartHome: charts/grafana
+helmCharts:
+  - name: grafana
+    repo: https://grafana.github.io/helm-charts
+    version: 10.2.0
+    releaseName: grafana
+    namespace: core-observe
+    valuesFile: resources/grafana-values.yaml
+  - name: kube-prometheus-stack
+    repo: https://prometheus-community.github.io/helm-charts
+    version: 79.7.1
+    releaseName: prometheus
+    namespace: core-observe
+    valuesFile: resources/prometheus-values.yaml
+  - name: loki
+    repo: https://grafana.github.io/helm-charts
+    version: 6.46.0
+    releaseName: loki
+    namespace: core-observe
+    valuesFile: resources/loki-values.yaml
+  - name: alloy
+    repo: https://grafana.github.io/helm-charts
+    version: 1.4.0
+    releaseName: alloy
+    namespace: core-observe
+    valuesFile: resources/alloy-values.yaml

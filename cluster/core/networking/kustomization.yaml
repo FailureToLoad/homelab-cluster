@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - resources/ingress.yaml
+  - resources/origin-ca.yaml
+  - resources/deployment.yaml
+  - resources/cert-manager.k8s.cloudflare.com_clusteroriginissuers.yaml
+  - resources/cert-manager.k8s.cloudflare.com_originissuers.yaml
+helmGlobals:
+  chartHome: charts/networking
+helmCharts:
+  - name: traefik
+    repo: https://traefik.github.io/charts
+    version: 37.4.0
+    releaseName: traefik
+    namespace: core-networking
+    valuesFile: resources/traefik-values.yaml
+  - name: origin-ca-issuer
+    repo: oci://ghcr.io/cloudflare/origin-ca-issuer-charts
+    version: 0.5.10
+    releaseName: origin-ca-issuer
+    namespace: core-networking
+    valuesFile: resources/origin-ca-issuer-values.yaml
