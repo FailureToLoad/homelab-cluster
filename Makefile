@@ -14,4 +14,4 @@ azuresecrets:
 	SECRETS_PATH=$$(realpath ./cluster/bootstrap/secrets/azure) && cd homelabtools && go run ./cmd/azuresecrets $$SECRETS_PATH
 
 bootstrap:
-	kubectl apply -k cluster/bootstrap --server-side
+	kubectl apply -f /home/dm/Repos/homelab-cluster/cluster/bootstrap/cluster-appset.yaml

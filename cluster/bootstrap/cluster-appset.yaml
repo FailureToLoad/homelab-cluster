@@ -35,31 +35,6 @@ spec:
           - path: cluster/app/*
         values:
           tier: "4"
-  strategy:
-    type: RollingSync
-    deletionOrder: Reverse
-    rollingSync:
-      steps:
-        - matchExpressions:
-            - key: tier
-              operator: In
-              values:
-                - "1"
-        - matchExpressions:
-            - key: tier
-              operator: In
-              values:
-                - "2"
-        - matchExpressions:
-            - key: tier
-              operator: In
-              values:
-                - "3"
-        - matchExpressions:
-            - key: tier
-              operator: In
-              values:
-                - "4"
   template:
     metadata:
       name: "{{ .path.basename }}"
@@ -75,12 +50,14 @@ spec:
         name: in-cluster
         namespace: core-argocd
       syncPolicy:
-        automated:
-          prune: false
-          selfHeal: false
-          allowEmpty: true
         syncOptions:
           - ServerSideApply=true
           - RespectIgnoreDifferences=true
+        retry:
+          limit: 3
+          backoff:
+            duration: 10s
+            factor: 2
+            maxDuration: 3m
   syncPolicy:
     applicationsSync: create-update
