@@ -16,7 +16,8 @@ resources:
   - core-loki.yaml
   - core-prometheus.yaml
   - core-alloy.yaml
-  - datamonster.yaml
   - core-image-updater.yaml
   - core-origin-ca-issuer-crds.yaml
   - core-origin-ca-issuer.yaml
+  - core-valkey.yaml
+  - datamonster.yaml
