@@ -23,16 +23,9 @@ spec:
         path: "{{ .path.path }}"
       destination:
         name: in-cluster
-        namespace: core-argocd
       syncPolicy:
         syncOptions:
           - ServerSideApply=true
           - RespectIgnoreDifferences=true
-        retry:
-          limit: 3
-          backoff:
-            duration: 10s
-            factor: 2
-            maxDuration: 3m
   syncPolicy:
     applicationsSync: create-update

@@ -4,6 +4,7 @@ namespace: core-networking
 resources:
   - namespace.yaml
   - resources/ingress.yaml
+  - resources/datamonster-ingress.yaml
   - resources/origin-ca.yaml
   - resources/deployment.yaml
   - resources/cert-manager.k8s.cloudflare.com_clusteroriginissuers.yaml
