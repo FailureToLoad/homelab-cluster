@@ -55,6 +55,7 @@ spec:
       data:
         identity_providers.oidc.hmac.key: "{{ .oidc_hmac }}"
         identity_validation.reset_password.jwt.hmac.key: "{{ .jwt }}"
+        authentication.ldap.password.txt: "{{ .ldap }}"
         session.encryption.key: "{{ .session }}"
         storage.encryption.key: "{{ .storage }}"
   data:
@@ -64,6 +65,9 @@ spec:
     - secretKey: jwt
       remoteRef:
         key: authelia-jwt-secret
+    - secretKey: ldap
+      remoteRef:
+        key: authelia-ldap-password
     - secretKey: session
       remoteRef:
         key: authelia-session-secret
