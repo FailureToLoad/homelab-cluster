@@ -109,6 +109,9 @@ spec:
     - secretKey: ldap
       remoteRef:
         key: authelia-ldap-password
+    - secretKey: postgres
+      remoteRef:
+        key: authelia-postgres-password
 ---
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
