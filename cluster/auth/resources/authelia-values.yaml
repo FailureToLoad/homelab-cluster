@@ -118,9 +118,9 @@ configMap:
         policy: 'one_factor'
 
   persistence:
-  enabled: false
-  storageClass: 'longhorn'
-  size: '1Gi'
+    enabled: false
+    storageClass: 'longhorn'
+    size: '1Gi'
 
 secret:
   existingSecret: 'authelia-crypto'
