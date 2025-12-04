@@ -98,6 +98,7 @@ spec:
         OIDC_ISSUER_PRIVATE_KEY: "{{ .oidc_rsa }}"
         DATAMONSTER_CLIENT_SECRET: "{{ .datamonster }}"
         LDAP_PASSWORD: "{{ .ldap }}"
+        POSTGRES_PASSWORD: "{{ .postgres }}"
   data:
     - secretKey: oidc_rsa
       remoteRef:
@@ -108,3 +109,31 @@ spec:
     - secretKey: ldap
       remoteRef:
         key: authelia-ldap-password
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: authelia-db-owner
+  namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  target:
+    name: authelia-db-owner
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      data:
+        username: authelia
+        password: "{{ .password }}"
+  data:
+    - secretKey: password
+      remoteRef:
+        key: authelia-postgres-password
+    - secretKey: postgres
+      remoteRef:
+        key: authelia-postgres-password

@@ -23,6 +23,7 @@ openssl ecparam -name prime256v1 -genkey -noout -out /tmp/authelia-ec-private.pe
 az keyvault secret set --vault-name kv-name --name authelia-oidc-ec-private-key --file /tmp/authelia-ec-private.pem
 rm /tmp/authelia-ec-private.pem
 az keyvault secret set --vault-name kv-name --name authelia-datamonster-client-secret --value "$(openssl rand -base64 64)"
+az keyvault secret set --vault-name kv-name --name authelia-postgres-password --value "$(openssl rand -base64 32)"
 ```
 
 ### Setup Steps

@@ -6,6 +6,7 @@ resources:
   - resources/lldap.yaml
   - resources/ingress.yaml
   - resources/authelia-ingress.yaml
+  - resources/authelia-db.yaml
 helmGlobals:
   chartHome: charts/authelia
 helmCharts:

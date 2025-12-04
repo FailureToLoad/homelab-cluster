@@ -47,8 +47,20 @@ configMap:
 
   storage:
     local:
+      enabled: false
+      path: '/config/db.sqlite3'
+    postgres:
       enabled: true
-      path: '/data/db.sqlite3'
+      deploy: false
+      address: 'tcp://authelia-db-rw.core-auth.svc.cluster.local:5432'
+      timeout: '5s'
+      database: 'authelia'
+      schema: 'public'
+      username: 'authelia'
+      password:
+        disabled: false
+        secret_name: authelia-secrets
+        path: 'POSTGRES_PASSWORD'
 
   notifier:
     filesystem:
@@ -105,8 +117,8 @@ configMap:
       - domain: '*.zonkey-broadnose.ts.net'
         policy: 'one_factor'
 
-persistence:
-  enabled: true
+  persistence:
+  enabled: false
   storageClass: 'longhorn'
   size: '1Gi'
 
@@ -121,3 +133,5 @@ secret:
           path: DATAMONSTER_CLIENT_SECRET
         - key: OIDC_ISSUER_PRIVATE_KEY
           path: OIDC_ISSUER_PRIVATE_KEY
+        - key: POSTGRES_PASSWORD
+          path: POSTGRES_PASSWORD

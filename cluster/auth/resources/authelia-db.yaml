@@ -1,0 +1,19 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: authelia-db
+  namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  description: Authelia backing database
+  instances: 1
+  storage:
+    size: 5Gi
+    storageClass: longhorn
+  bootstrap:
+    initdb:
+      database: authelia
+      owner: authelia
+      secret:
+        name: authelia-db-owner
