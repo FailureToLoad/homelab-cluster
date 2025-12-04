@@ -77,7 +77,7 @@ configMap:
           algorithm: 'RS256'
           use: 'sig'
           key:
-            file: '/secrets/authelia-secrets/OIDC_ISSUER_PRIVATE_KEY'
+            path: '/secrets/authelia-secrets/OIDC_ISSUER_PRIVATE_KEY'
       clients:
         - client_id: 'datamonster'
           client_name: 'DataMonster'
@@ -92,6 +92,7 @@ configMap:
             - 'profile'
             - 'email'
             - 'groups'
+            - 'offline_access'
           grant_types:
             - 'authorization_code'
             - 'refresh_token'
