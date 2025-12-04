@@ -2,6 +2,8 @@ annotations:
   argocd.argoproj.io/sync-wave: "4"
 
 pod:
+  kind: 'Deployment'
+  replicas: 1
   enableServiceLinks: false
 
 configMap:
@@ -31,9 +33,7 @@ configMap:
         member_of: 'memberOf'
         group_name: 'cn'
       password:
-        disabled: false
-        secret_name: 'authelia-secrets'
-        key: 'ldap_password'
+        file: '/secrets/authelia-secrets/LDAP_PASSWORD'
 
   session:
     name: 'authelia_session'
@@ -44,31 +44,16 @@ configMap:
     expiration: '1h'
     inactivity: '5m'
     remember_me: '1M'
-    secret:
-      disabled: false
-      secret_name: 'authelia-secrets'
-      key: 'session_secret'
 
   storage:
     local:
       enabled: true
       path: '/data/db.sqlite3'
-    encryption_key:
-      disabled: false
-      secret_name: 'authelia-secrets'
-      key: 'storage_encryption_key'
 
   notifier:
     filesystem:
       enabled: true
       filename: '/data/notification.txt'
-
-  identity_validation:
-    reset_password:
-      jwt_secret:
-        disabled: false
-        secret_name: 'authelia-secrets'
-        key: 'jwt_secret'
 
   identity_providers:
     oidc:
@@ -87,32 +72,17 @@ configMap:
           - 'introspection'
           - 'userinfo'
         allowed_origins_from_client_redirect_uris: true
-      hmac_secret:
-        disabled: false
-        secret_name: 'authelia-secrets'
-        key: 'oidc_hmac_secret'
       jwks:
         - key_id: 'rsa'
           algorithm: 'RS256'
           use: 'sig'
           key:
-            disabled: false
-            secret_name: 'authelia-secrets'
-            key: 'oidc_rsa_private_key'
-        - key_id: 'ec'
-          algorithm: 'ES256'
-          use: 'sig'
-          key:
-            disabled: false
-            secret_name: 'authelia-secrets'
-            key: 'oidc_ec_private_key'
+            file: '/secrets/authelia-secrets/OIDC_ISSUER_PRIVATE_KEY'
       clients:
         - client_id: 'datamonster'
           client_name: 'DataMonster'
           client_secret:
-            disabled: false
-            secret_name: 'authelia-secrets'
-            key: 'datamonster_client_secret'
+            path: '/secrets/authelia-secrets/DATAMONSTER_CLIENT_SECRET'
           public: false
           authorization_policy: 'one_factor'
           redirect_uris:
@@ -140,4 +110,13 @@ persistence:
   size: '1Gi'
 
 secret:
-  existingSecret: 'authelia-secrets'
+  existingSecret: 'authelia-crypto'
+  additionalSecrets:
+    authelia-secrets:
+      items:
+        - key: LDAP_PASSWORD
+          path: LDAP_PASSWORD
+        - key: DATAMONSTER_CLIENT_SECRET
+          path: DATAMONSTER_CLIENT_SECRET
+        - key: OIDC_ISSUER_PRIVATE_KEY
+          path: OIDC_ISSUER_PRIVATE_KEY

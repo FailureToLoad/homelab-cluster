@@ -37,6 +37,43 @@ spec:
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
+  name: authelia-crypto
+  namespace: core-auth
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  target:
+    name: authelia-crypto
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      engineVersion: v2
+      data:
+        identity_providers.oidc.hmac.key: "{{ .oidc_hmac }}"
+        identity_validation.reset_password.jwt.hmac.key: "{{ .jwt }}"
+        session.encryption.key: "{{ .session }}"
+        storage.encryption.key: "{{ .storage }}"
+  data:
+    - secretKey: oidc_hmac
+      remoteRef:
+        key: authelia-oidc-hmac-secret
+    - secretKey: jwt
+      remoteRef:
+        key: authelia-jwt-secret
+    - secretKey: session
+      remoteRef:
+        key: authelia-session-secret
+    - secretKey: storage
+      remoteRef:
+        key: authelia-storage-encryption-key
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
   name: authelia-secrets
   namespace: core-auth
   annotations:
@@ -50,28 +87,20 @@ spec:
   target:
     name: authelia-secrets
     creationPolicy: Owner
+    template:
+      type: Opaque
+      engineVersion: v2
+      data:
+        OIDC_ISSUER_PRIVATE_KEY: "{{ .oidc_rsa }}"
+        DATAMONSTER_CLIENT_SECRET: "{{ .datamonster }}"
+        LDAP_PASSWORD: "{{ .ldap }}"
   data:
-    - secretKey: jwt_secret
-      remoteRef:
-        key: authelia-jwt-secret
-    - secretKey: session_secret
-      remoteRef:
-        key: authelia-session-secret
-    - secretKey: storage_encryption_key
-      remoteRef:
-        key: authelia-storage-encryption-key
-    - secretKey: oidc_hmac_secret
-      remoteRef:
-        key: authelia-oidc-hmac-secret
-    - secretKey: oidc_rsa_private_key
+    - secretKey: oidc_rsa
       remoteRef:
         key: authelia-oidc-rsa-private-key
-    - secretKey: oidc_ec_private_key
-      remoteRef:
-        key: authelia-oidc-ec-private-key
-    - secretKey: ldap_password
-      remoteRef:
-        key: authelia-ldap-password
-    - secretKey: datamonster_client_secret
+    - secretKey: datamonster
       remoteRef:
         key: authelia-datamonster-client-secret
+    - secretKey: ldap
+      remoteRef:
+        key: authelia-ldap-password
