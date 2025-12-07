@@ -123,3 +123,14 @@ robin-update:
 update: batman-update nightwing-update redhood-update robin-update
  @echo "Update commands issued"
 ```
+
+## Cert Manager
+
+I don't enjoy managing raw certs so I usually try to get cert-manager in ASAP.  
+
+Run `make certmanager` to install it to your cluster and have it assume responsibility of cilium/hubble certs. It does the following:
+
+1. Deploys cert manager
+1. Annotates the previously inline cilium secrets
+1. Annotates the previously inline hubble secrets
+1. Deploys a cluster issuer resource for cilium's certs which uses the annotations to assume ownership going forward
