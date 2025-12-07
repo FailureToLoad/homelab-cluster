@@ -1,4 +1,4 @@
-.PHONY: bootstrap talosconfigs namespaces certmanager external-secrets
+.PHONY: bootstrap talosconfigs namespaces certmanager external-secrets tailscale
 
 bootstrap:
 	cd bootstrapper && go run .
@@ -65,3 +65,12 @@ endif
 	BWS_ORG_ID="$$BWS_ORG_ID" BWS_PROJECT_ID="$$BWS_PROJECT_ID" \
 		envsubst < cluster/apps/external-secrets/cluster-secret-store.yaml | kubectl apply -f -
 	@echo "external-secrets installed with Bitwarden Secrets Manager."
+
+tailscale: namespaces
+	@echo "Waiting for tailscale oauth secret to be synced..."
+	kubectl wait --for=condition=Ready externalsecret/tailscale-operator-oauth -n tailscale --timeout=120s
+
+	kubectl kustomize cluster/apps/tailscale --enable-helm | kubectl apply --server-side -f -
+	@echo "Waiting for tailscale-operator to be ready..."
+	kubectl wait --for=condition=Available deployment/operator -n tailscale --timeout=120s
+	@echo "Tailscale operator installed."

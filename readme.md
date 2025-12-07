@@ -215,3 +215,108 @@ Run `kubectl get externalsecret testsecret -n default` to make sure the secret w
 Run `kubectl get secret testsecret -n default -o jsonpath='{.data.value}' | base64 -d` to see the value of the secret.  
 
 Run `kubectl delete externalsecret testsecret -n default` to delete the test secret.
+
+## Tailscale Operator Setup
+
+The Tailscale Kubernetes Operator enables secure access to cluster services over your tailnet.
+
+### Tailscale Prerequisites
+
+Before deploying the operator, you need to create OAuth credentials in your Tailscale account:
+
+1. Configure ACL tags in your tailnet policy file
+
+   Navigate to [Access Controls](https://login.tailscale.com/admin/acls) in the Tailscale admin console and add:
+
+   ```json
+   {
+     "tagOwners": {
+       "tag:k8s-operator": [],
+       "tag:k8s": ["tag:k8s-operator"]
+     }
+   }
+   ```
+
+1. Create OAuth client:
+
+   Go to [Trust Credentials](https://login.tailscale.com/admin/settings/trust-credentials) and create an OAuth client with:
+   - **Scopes**: `Devices -> Core` (read,write), `Keys -> Auth Keys` (read,write)
+   - **Tags**: `tag:k8s-operator`
+
+1. Store OAuth credentials in Bitwarden Secrets Manager:
+
+Store the client id as `tailscale-oauth-client`  
+Store the client secret as `tailscale-oauth-secret`  
+
+### Deploy Tailscale Operator
+
+Run `make tailscale`.  
+
+The operator is deployed as part of the bootstrap process:
+
+This deploys:
+
+1. Tailscale operator CRDs
+1. ExternalSecret to sync OAuth credentials from Azure Key Vault
+1. Cilium socket bypass configuration for kube-proxy replacement mode
+
+### Verify Tailscale Deployment
+
+Check that the operator is running:
+
+```bash
+kubectl get pods -n tailscale
+```
+
+The operator pod should show `Running` status.
+
+Verify the operator joined your tailnet:
+
+Go to [Machines](https://login.tailscale.com/admin/machines) in the Tailscale admin console and look for a node named `homelab-k8s-operator` tagged with `tag:k8s-operator`.
+
+### Tailscale Operator Troubleshooting
+
+If the operator fails to start:
+
+1. Check operator logs:
+
+   ```bash
+   kubectl logs -n tailscale deployment/operator --tail=50
+   ```
+
+2. Common errors:
+   - **"API token invalid" (401)**: OAuth credentials are incorrect. Verify secrets in Azure Key Vault match your Tailscale OAuth client
+   - **"Permission denied"**: OAuth client missing required scopes (`Devices Core`, `Auth Keys`)
+   - **"Tag not found"**: ACL tags not configured in tailnet policy file
+
+3. Verify OAuth secret:
+
+   ```bash
+   kubectl get externalsecret -n tailscale
+   kubectl get secret operator-oauth -n tailscale -o jsonpath='{.data.client_id}' | base64 -d
+   ```
+
+4. Refresh secrets after updating Key Vault:
+
+   ```bash
+   kubectl delete externalsecret tailscale-operator-oauth -n tailscale
+   kubectl apply -f core/apps/tailscale/operator-oauth.yaml
+   kubectl rollout restart deployment/operator -n tailscale
+   ```
+
+If the operator isn't appearing in your tailnet:
+
+- Check that ACL tags are configured correctly
+- Verify OAuth client has `tag:k8s-operator` assigned
+- Check operator logs for authentication errors
+
+### Cilium Compatibility
+
+Since the cluster runs Cilium in kube-proxy replacement mode, the operator deployment includes the annotation:
+
+```yaml
+podAnnotations:
+  io.cilium.no-track-port: "41641"
+```
+
+This enables socket load balancer bypass in the operator's pod namespace, required for Tailscale ingress and egress services to work correctly with Cilium.
