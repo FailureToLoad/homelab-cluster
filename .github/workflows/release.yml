@@ -1,0 +1,68 @@
+name: release
+
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: failuretoload/talos-rpi5-v1.11.5-1-custom
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build installer image
+        run: |
+          docker run --rm \
+            --volume $(pwd)/out:/out \
+            ghcr.io/talos-rpi5/imager:v1.11.5-1-gfe840f161 \
+            installer \
+            --arch arm64 \
+            --overlay-image ghcr.io/talos-rpi5/sbc-raspberrypi5:7d04484-v1.11.0-1-g34f19c2 \
+            --overlay-name rpi5 \
+            --system-extension-image "ghcr.io/siderolabs/iscsi-tools:v0.2.0" \
+            --system-extension-image "ghcr.io/siderolabs/util-linux-tools:2.41.2"
+
+          docker load -i out/installer-arm64.tar
+          docker tag ghcr.io/talos-rpi5/installer-base:v1.11.5-1-gfe840f161 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build raw disk image
+        run: |
+          docker run --rm --privileged \
+            --volume /dev:/dev \
+            --volume $(pwd)/out:/out \
+            ghcr.io/talos-rpi5/imager:v1.11.5-1-gfe840f161 \
+            metal \
+            --arch arm64 \
+            --overlay-image ghcr.io/talos-rpi5/sbc-raspberrypi5:7d04484-v1.11.0-1-g34f19c2 \
+            --overlay-name rpi5 \
+            --system-extension-image "ghcr.io/siderolabs/iscsi-tools:v0.2.0" \
+            --system-extension-image "ghcr.io/siderolabs/util-linux-tools:2.41.2"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.11.5-1
+          name: Talos RPi5 v1.11.5-1
+          body: |
+            Custom Talos Linux image for Raspberry Pi 5
+
+            Base: ghcr.io/talos-rpi5/imager:v1.11.5-1-gfe840f161
+            Overlay: ghcr.io/talos-rpi5/sbc-raspberrypi5:7d04484-v1.11.0-1-g34f19c2
+
+            Extensions:
+            - iscsi-tools v0.2.0
+            - util-linux-tools 2.41.2
+          files: out/metal-arm64.raw.zst
