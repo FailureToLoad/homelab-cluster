@@ -42,9 +42,12 @@ spec:
       tls:
         enabled: true
         auto:
-          enabled: false
-        server:
-          secretName: hubble-server-certs
+          enabled: true
+          method: certmanager
+          certManagerIssuerRef:
+            group: cert-manager.io
+            kind: Issuer
+            name: cilium-ca-issuer
     securityContext:
       capabilities:
         ciliumAgent:
