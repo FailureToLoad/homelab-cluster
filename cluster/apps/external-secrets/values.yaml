@@ -1,0 +1,21 @@
+replicaCount: 2
+
+bitwarden-sdk-server:
+  enabled: true
+  namespace: external-secrets
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+webhook:
+  replicaCount: 2
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+certController:
+  replicaCount: 2
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1

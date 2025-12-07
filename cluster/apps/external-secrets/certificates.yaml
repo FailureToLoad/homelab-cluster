@@ -1,0 +1,24 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bitwarden-tls-certs
+  namespace: external-secrets
+spec:
+  secretName: bitwarden-tls-certs
+  duration: 8760h
+  renewBefore: 720h
+  commonName: bitwarden-sdk-server
+  dnsNames:
+    - bitwarden-sdk-server
+    - bitwarden-sdk-server.external-secrets
+    - bitwarden-sdk-server.external-secrets.svc
+    - bitwarden-sdk-server.external-secrets.svc.cluster.local
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - server auth
+  issuerRef:
+    name: cilium-selfsigned
+    kind: ClusterIssuer
+    group: cert-manager.io
