@@ -222,3 +222,23 @@ spec:
       kind: Deployment
       name: valkey
       namespace: valkey
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: postgres
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./cluster/apps/postgres
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: namespaces
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cnpg-cloudnative-pg
+      namespace: postgres
