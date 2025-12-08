@@ -1,0 +1,17 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: datamonster
+  namespace: edge
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`data-monster.net`)
+      kind: Rule
+      services:
+        - name: datamonster
+          namespace: datamonster
+          port: 80
+  tls:
+    secretName: data-monster-wildcard-tls
