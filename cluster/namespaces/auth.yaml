@@ -26,3 +26,30 @@ spec:
     - secretKey: jwt-secret
       remoteRef:
         key: lldap-seed
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: authelia
+  namespace: auth
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: bitwarden-secrets
+    kind: ClusterSecretStore
+  target:
+    name: authelia
+    creationPolicy: Owner
+  data:
+    - secretKey: identity_validation.reset_password.jwt.hmac.key
+      remoteRef:
+        key: authelia-jwt-secret
+    - secretKey: session.encryption.key
+      remoteRef:
+        key: authelia-session-secret
+    - secretKey: storage.encryption.key
+      remoteRef:
+        key: authelia-storage-key
+    - secretKey: authentication.ldap.password.txt
+      remoteRef:
+        key: lldap-admin-pass

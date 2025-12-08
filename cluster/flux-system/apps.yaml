@@ -398,3 +398,24 @@ spec:
       kind: Deployment
       name: lldap
       namespace: auth
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: authelia
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./cluster/apps/authelia
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: lldap
+    - name: valkey
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: authelia
+      namespace: auth

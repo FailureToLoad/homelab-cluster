@@ -1,0 +1,84 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: authelia
+  namespace: auth
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: authelia
+      version: 0.10.49
+      sourceRef:
+        kind: HelmRepository
+        name: authelia
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    ingress:
+      enabled: true
+      className: traefik
+      tls:
+        enabled: true
+    configMap:
+      theme: auto
+      default_2fa_method: totp
+      log:
+        level: info
+      authentication_backend:
+        ldap:
+          enabled: true
+          implementation: custom
+          address: ldap://lldap.auth.svc.cluster.local:3890
+          timeout: 5s
+          start_tls: false
+          base_dn: dc=homelab,dc=local
+          additional_users_dn: ou=people
+          users_filter: (&(|({username_attribute}={input})({mail_attribute}={input}))(objectClass=person))
+          additional_groups_dn: ou=groups
+          groups_filter: (member={dn})
+          user: uid=userdaddy,ou=people,dc=homelab,dc=local
+          attributes:
+            distinguished_name: ""
+            username: uid
+            display_name: displayName
+            mail: mail
+            member_of: memberOf
+            group_name: cn
+        file:
+          enabled: false
+      session:
+        cookies:
+          - domain: electriclantern.net
+            subdomain: auth
+        redis:
+          enabled: true
+          host: valkey.valkey.svc.cluster.local
+          port: 6379
+          password:
+            disabled: true
+      storage:
+        postgres:
+          enabled: true
+          address: tcp://auth-db-rw.auth.svc.cluster.local:5432
+          database: app
+          username: app
+          password:
+            secret_name: auth-db-app
+            path: password
+      notifier:
+        filesystem:
+          enabled: true
+        smtp:
+          enabled: false
+      access_control:
+        default_policy: one_factor
+    secret:
+      existingSecret: authelia
+      additionalSecrets:
+        auth-db-app: {}
