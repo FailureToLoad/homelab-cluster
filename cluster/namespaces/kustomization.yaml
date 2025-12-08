@@ -7,3 +7,4 @@ resources:
   - tailscale.yaml
   - longhorn-system.yaml
   - core-observe.yaml
+  - valkey.yaml
