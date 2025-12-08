@@ -1,0 +1,22 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: datamonster
+  namespace: flux-system
+spec:
+  image: batcomputer-gse9eyezfzhubya2.azurecr.io/datamonster-web
+  interval: 5m
+  secretRef:
+    name: acr-credentials
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: datamonster
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: datamonster
+  policy:
+    alphabetical:
+      order: desc

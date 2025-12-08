@@ -1,0 +1,53 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: acr-credentials
+  namespace: flux-system
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: bitwarden-secrets
+    kind: ClusterSecretStore
+  target:
+    name: acr-credentials
+    creationPolicy: Owner
+    template:
+      type: kubernetes.io/dockerconfigjson
+      data:
+        .dockerconfigjson: |
+          {"auths":{"{{ .server }}":{"username":"{{ .username }}","password":"{{ .password }}"}}}
+  data:
+    - secretKey: server
+      remoteRef:
+        key: acr-login-server
+    - secretKey: username
+      remoteRef:
+        key: acr-user
+    - secretKey: password
+      remoteRef:
+        key: acr-pass
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: flux-system
+  namespace: flux-system
+spec:
+  interval: 30m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        name: fluxcdbot
+        email: fluxcdbot@users.noreply.github.com
+      messageTemplate: 'chore: update image {{range .Changed.Changes}}{{print .OldValue}} -> {{print .NewValue}} {{end}}'
+    push:
+      branch: main
+  update:
+    path: ./cluster
+    strategy: Setters

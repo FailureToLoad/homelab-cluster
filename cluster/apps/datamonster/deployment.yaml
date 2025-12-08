@@ -22,7 +22,7 @@ spec:
         - name: acr-credentials
       containers:
         - name: datamonster
-          image: batcomputer-gse9eyezfzhubya2.azurecr.io/datamonster-web:latest
+          image: batcomputer-gse9eyezfzhubya2.azurecr.io/datamonster-web:latest # {"$imagepolicy": "flux-system:datamonster"}
           ports:
             - name: http
               containerPort: 80
