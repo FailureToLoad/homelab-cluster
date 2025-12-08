@@ -6,3 +6,4 @@ resources:
   - external-secrets.yaml
   - tailscale.yaml
   - longhorn-system.yaml
+  - core-observe.yaml
