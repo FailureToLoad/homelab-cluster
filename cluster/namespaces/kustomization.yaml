@@ -5,3 +5,4 @@ resources:
   - cert-manager.yaml
   - external-secrets.yaml
   - tailscale.yaml
+  - longhorn-system.yaml
