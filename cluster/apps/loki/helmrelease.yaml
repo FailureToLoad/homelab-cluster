@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: loki
-  namespace: core-observe
+  namespace: observe
 spec:
   interval: 30m
   chart:
@@ -31,7 +31,7 @@ spec:
         retention_period: 168h
         max_query_lookback: 168h
         retention_stream:
-          - selector: '{namespace="core-observe"}'
+          - selector: '{namespace="observe"}'
             priority: 2
             period: 168h
           - selector: '{level="debug"}'

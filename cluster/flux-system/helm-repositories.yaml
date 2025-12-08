@@ -89,3 +89,12 @@ spec:
   type: oci
   interval: 1h
   url: oci://ghcr.io/cloudflare/origin-ca-issuer-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: metrics-server
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://kubernetes-sigs.github.io/metrics-server/

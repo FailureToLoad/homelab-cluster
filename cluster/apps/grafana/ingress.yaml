@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: grafana
-  namespace: core-observe
+  namespace: observe
 spec:
   ingressClassName: tailscale
   defaultBackend:

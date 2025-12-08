@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: alloy
-  namespace: core-observe
+  namespace: observe
 spec:
   interval: 30m
   chart:
@@ -94,13 +94,13 @@ spec:
           
           prometheus.remote_write "default" {
             endpoint {
-              url = "http://prometheus-kube-prometheus-prometheus.core-observe:9090/api/v1/write"
+              url = "http://prometheus-kube-prometheus-prometheus.observe:9090/api/v1/write"
             }
           }
           
           loki.write "default" {
             endpoint {
-              url = "http://loki-gateway.core-observe:80/loki/api/v1/push"
+              url = "http://loki-gateway.observe:80/loki/api/v1/push"
             }
           }
     controller:

@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: grafana
-  namespace: core-observe
+  namespace: observe
 spec:
   interval: 30m
   chart:
@@ -41,13 +41,13 @@ spec:
           - name: Prometheus
             type: prometheus
             access: proxy
-            url: http://prometheus-kube-prometheus-prometheus.core-observe:9090
+            url: http://prometheus-kube-prometheus-prometheus.observe:9090
             isDefault: true
             editable: false
           - name: Loki
             type: loki
             access: proxy
-            url: http://loki-gateway.core-observe:80
+            url: http://loki-gateway.observe:80
             editable: false
     dashboardProviders:
       dashboardproviders.yaml:
