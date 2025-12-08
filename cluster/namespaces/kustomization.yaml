@@ -11,3 +11,4 @@ resources:
   - postgres.yaml
   - edge.yaml
   - datamonster.yaml
+  - auth.yaml
