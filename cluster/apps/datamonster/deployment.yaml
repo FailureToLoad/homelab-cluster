@@ -19,10 +19,10 @@ spec:
         app.kubernetes.io/component: web
     spec:
       imagePullSecrets:
-        - name: acr-credentials
+        - name: ghcr-credentials
       containers:
         - name: datamonster
-          image: batcomputer-gse9eyezfzhubya2.azurecr.io/datamonster-web:latest # {"$imagepolicy": "flux-system:datamonster"}
+          image: ghcr.io/failuretoload/datamonster-web:latest # {"$imagepolicy": "flux-system:datamonster"}
           ports:
             - name: http
               containerPort: 80
