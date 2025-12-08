@@ -242,3 +242,98 @@ spec:
       kind: Deployment
       name: cnpg-cloudnative-pg
       namespace: postgres
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: origin-ca-issuer-crds
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./cluster/apps/origin-ca-issuer-crds
+  prune: false
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: namespaces
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: origin-ca-issuer
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./cluster/apps/origin-ca-issuer
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: cert-manager
+    - name: external-secrets
+    - name: origin-ca-issuer-crds
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: origin-ca-issuer
+      namespace: edge
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cloudflare-certs
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./cluster/apps/cloudflare-certs
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: origin-ca-issuer
+    - name: external-secrets
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: traefik
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./cluster/apps/traefik
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: cloudflare-certs
+    - name: tailscale
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: traefik
+      namespace: edge
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cloudflared
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./cluster/apps/cloudflared
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: traefik
+    - name: external-secrets
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cloudflared
+      namespace: edge

@@ -9,3 +9,4 @@ resources:
   - core-observe.yaml
   - valkey.yaml
   - postgres.yaml
+  - edge.yaml

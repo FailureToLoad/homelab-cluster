@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edge
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cloudflared-tunnel-token
+  namespace: edge
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: bitwarden-secrets
+    kind: ClusterSecretStore
+  target:
+    name: cloudflared-tunnel-token
+    creationPolicy: Owner
+  data:
+    - secretKey: token
+      remoteRef:
+        key: cloudflared-tunnel-token
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cloudflare-origin-ca-token
+  namespace: edge
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: bitwarden-secrets
+    kind: ClusterSecretStore
+  target:
+    name: cloudflare-origin-ca-token
+    creationPolicy: Owner
+  data:
+    - secretKey: token
+      remoteRef:
+        key: cloudflare-origin-ca-token

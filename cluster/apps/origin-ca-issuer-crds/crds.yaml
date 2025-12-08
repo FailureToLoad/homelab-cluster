@@ -1,0 +1,23 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: origin-ca-issuer
+  namespace: flux-system
+spec:
+  interval: 24h
+  url: https://github.com/cloudflare/origin-ca-issuer
+  ref:
+    branch: trunk
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: origin-ca-issuer-crds
+  namespace: flux-system
+spec:
+  interval: 24h
+  path: ./deploy/crds
+  prune: false
+  sourceRef:
+    kind: GitRepository
+    name: origin-ca-issuer

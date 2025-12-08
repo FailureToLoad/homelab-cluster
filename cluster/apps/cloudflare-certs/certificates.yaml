@@ -1,0 +1,28 @@
+apiVersion: cert-manager.k8s.cloudflare.com/v1
+kind: OriginIssuer
+metadata:
+  name: cloudflare-origin-issuer
+  namespace: edge
+spec:
+  requestType: OriginECC
+  auth:
+    tokenRef:
+      name: cloudflare-origin-ca-token
+      key: token
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: data-monster-wildcard
+  namespace: edge
+spec:
+  secretName: data-monster-wildcard-tls
+  dnsNames:
+    - "data-monster.net"
+    - "*.data-monster.net"
+  duration: 2160h
+  renewBefore: 168h
+  issuerRef:
+    group: cert-manager.k8s.cloudflare.com
+    kind: OriginIssuer
+    name: cloudflare-origin-issuer
