@@ -337,3 +337,23 @@ spec:
       kind: Deployment
       name: cloudflared
       namespace: edge
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: datamonster
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./cluster/apps/datamonster
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: external-secrets
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: datamonster
+      namespace: datamonster

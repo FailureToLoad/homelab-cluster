@@ -10,3 +10,4 @@ resources:
   - valkey.yaml
   - postgres.yaml
   - edge.yaml
+  - datamonster.yaml
