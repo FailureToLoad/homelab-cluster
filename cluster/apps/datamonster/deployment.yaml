@@ -91,6 +91,20 @@ spec:
       containers:
         - name: datamonster-api
           image: ghcr.io/failuretoload/datamonster-api:7178773228764eb0099b1e8a7d5820697eb15a6d # {"$imagepolicy": "flux-system:datamonster-api"}
+          env:
+            - name: CLIENT_ID
+              value: "datamonster"
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: datamonster-oidc
+                  key: client-secret
+            - name: ISSUER_URL
+              value: "https://auth.electriclantern.net"
+            - name: REDIRECT_URL
+              value: "https://data-monster.net/auth/callback"
+            - name: INTROSPECT_URL
+              value: "https://auth.electriclantern.net/api/oidc/introspection"
           ports:
             - name: http
               containerPort: 8080

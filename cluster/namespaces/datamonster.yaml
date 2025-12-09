@@ -28,3 +28,21 @@ spec:
     - secretKey: password
       remoteRef:
         key: ghcr-token
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: datamonster-oidc
+  namespace: datamonster
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: bitwarden-secrets
+    kind: ClusterSecretStore
+  target:
+    name: datamonster-oidc
+    creationPolicy: Owner
+  data:
+    - secretKey: client-secret
+      remoteRef:
+        key: datamonster-oidc-secret
