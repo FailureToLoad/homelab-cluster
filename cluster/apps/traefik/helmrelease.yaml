@@ -54,7 +54,7 @@ spec:
     tlsStore:
       default:
         defaultCertificate:
-          secretName: data-monster-wildcard-tls
+          secretName: tunnel-wildcard-tls
     api:
       dashboard: true
     ingressRoute:

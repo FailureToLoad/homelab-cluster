@@ -22,9 +22,10 @@ spec:
   values:
     ingress:
       enabled: true
-      className: traefik
-      tls:
+      traefikCRD:
         enabled: true
+        entryPoints:
+          - websecure
     configMap:
       theme: auto
       default_2fa_method: totp
