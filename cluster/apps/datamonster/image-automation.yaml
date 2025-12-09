@@ -17,9 +17,12 @@ metadata:
 spec:
   imageRepositoryRef:
     name: datamonster
+  filterTags:
+    pattern: '^(?P<ts>[0-9]+\.[0-9]+\.[0-9]+-[0-9]+)$'
+    extract: '$ts'
   policy:
     alphabetical:
-      order: desc
+      order: asc
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImageRepository
@@ -40,6 +43,9 @@ metadata:
 spec:
   imageRepositoryRef:
     name: datamonster-api
+  filterTags:
+    pattern: '^(?P<ts>[0-9]+\.[0-9]+\.[0-9]+-[0-9]+)$'
+    extract: '$ts'
   policy:
     alphabetical:
-      order: desc
+      order: asc
