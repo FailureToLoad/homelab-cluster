@@ -76,9 +76,55 @@ spec:
           enabled: true
         smtp:
           enabled: false
+      identity_providers:
+        oidc:
+          enabled: true
+          jwks:
+            - key_id: rsa
+              algorithm: RS256
+              use: sig
+              key:
+                path: /secrets/oidc/jwks.rsa.pem
+            - key_id: es256
+              algorithm: ES256
+              use: sig
+              key:
+                path: /secrets/oidc/jwks.es256.pem
+          cors:
+            endpoints:
+              - authorization
+              - token
+              - revocation
+              - introspection
+              - userinfo
+            allowed_origins_from_client_redirect_uris: true
+          clients:
+            - client_id: datamonster
+              client_name: Datamonster
+              client_secret:
+                path: /secrets/oidc/client.datamonster.secret
+              public: false
+              authorization_policy: one_factor
+              redirect_uris:
+                - https://data-monster.net/auth/callback
+              scopes:
+                - openid
+                - profile
+                - email
+                - groups
+              token_endpoint_auth_method: client_secret_post
       access_control:
         default_policy: one_factor
     secret:
       existingSecret: authelia
       additionalSecrets:
         auth-db-app: {}
+        authelia:
+          path: oidc
+          items:
+            - key: identity_providers.oidc.jwks.key.rsa
+              path: jwks.rsa.pem
+            - key: identity_providers.oidc.jwks.key.es256
+              path: jwks.es256.pem
+            - key: oidc.client.datamonster.secret
+              path: client.datamonster.secret

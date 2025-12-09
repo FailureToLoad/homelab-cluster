@@ -53,3 +53,15 @@ spec:
     - secretKey: authentication.ldap.password.txt
       remoteRef:
         key: lldap-admin-pass
+    - secretKey: identity_providers.oidc.hmac.key
+      remoteRef:
+        key: authelia-oidc-hmac-secret
+    - secretKey: oidc.client.datamonster.secret
+      remoteRef:
+        key: datamonster-oidc-hash
+    - secretKey: identity_providers.oidc.jwks.key.rsa
+      remoteRef:
+        key: authelia-oidc-jwks-rsa
+    - secretKey: identity_providers.oidc.jwks.key.es256
+      remoteRef:
+        key: authelia-oidc-jwks-es256
