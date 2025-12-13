@@ -36,10 +36,10 @@ spec:
           resources:
             requests:
               cpu: 10m
-              memory: 16Mi
+              memory: 64Mi
             limits:
               cpu: 100m
-              memory: 32Mi
+              memory: 128Mi
           livenessProbe:
             httpGet:
               path: /
