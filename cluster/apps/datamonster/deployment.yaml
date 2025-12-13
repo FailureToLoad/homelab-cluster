@@ -24,10 +24,12 @@ spec:
         - name: datamonster
           image: ghcr.io/failuretoload/datamonster-web:2025.12.13-21 # {"$imagepolicy": "flux-system:datamonster"}
           env:
+            - name: PORT
+              value: "80"
             - name: API_URL
               value: "http://datamonster-api:8080"
             - name: API_HOST
-              value: "datamonster-api:8080"
+              value: "http://datamonster-api:8080"
           ports:
             - name: http
               containerPort: 80
