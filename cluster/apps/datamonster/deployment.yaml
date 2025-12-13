@@ -26,6 +26,8 @@ spec:
           env:
             - name: API_URL
               value: "http://datamonster-api:8080"
+            - name: API_HOST
+              value: "datamonster-api:8080"
           ports:
             - name: http
               containerPort: 80
