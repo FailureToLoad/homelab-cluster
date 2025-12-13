@@ -90,7 +90,7 @@ spec:
         - name: ghcr-credentials
       containers:
         - name: datamonster-api
-          image: ghcr.io/failuretoload/datamonster-api:2025.12.12-15 # {"$imagepolicy": "flux-system:datamonster-api"}
+          image: ghcr.io/failuretoload/datamonster-api:2025.12.13-16 # {"$imagepolicy": "flux-system:datamonster-api"}
           env:
             - name: CLIENT_ID
               value: "datamonster"
