@@ -105,10 +105,12 @@ spec:
               value: "https://data-monster.net/auth/callback"
             - name: INTROSPECT_URL
               value: "https://auth.electriclantern.net/api/oidc/introspection"
-            - name: FRONTEND_URL
+            - name: CLIENT_URL
               value: "https://data-monster.net"
             - name: VALKEY_ADDR
               value: "valkey.valkey.svc.cluster.local:6379"
+            - name: COOKIE_SECURE
+              value: "true"
           ports:
             - name: http
               containerPort: 8080
