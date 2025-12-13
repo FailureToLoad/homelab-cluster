@@ -18,11 +18,11 @@ spec:
   imageRepositoryRef:
     name: datamonster
   filterTags:
-    pattern: '^(?P<ts>[0-9]+\.[0-9]+\.[0-9]+-[0-9]+)$'
-    extract: '$ts'
+    pattern: '^(?P<year>\d+)\.(?P<month>\d+)\.(?P<day>\d+)-(?P<build>\d+)$'
+    extract: '$year$month$day$build'
   policy:
-    alphabetical:
-      order: desc
+    numerical:
+      order: asc
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImageRepository
@@ -44,8 +44,8 @@ spec:
   imageRepositoryRef:
     name: datamonster-api
   filterTags:
-    pattern: '^(?P<ts>[0-9]+\.[0-9]+\.[0-9]+-[0-9]+)$'
-    extract: '$ts'
+    pattern: '^(?P<year>\d+)\.(?P<month>\d+)\.(?P<day>\d+)-(?P<build>\d+)$'
+    extract: '$year$month$day$build'
   policy:
-    alphabetical:
-      order: desc
+    numerical:
+      order: asc
