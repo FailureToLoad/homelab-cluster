@@ -1,3 +1,22 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: datamonster-db
+  namespace: datamonster
+spec:
+  instances: 1
+  primaryUpdateStrategy: unsupervised
+  storage:
+    storageClass: longhorn
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -115,6 +134,11 @@ spec:
               value: "valkey.valkey.svc.cluster.local:6379"
             - name: COOKIE_SECURE
               value: "true"
+            - name: DBSN
+              valueFrom:
+                secretKeyRef:
+                  name: datamonster-db-app
+                  key: uri
           ports:
             - name: http
               containerPort: 8080
