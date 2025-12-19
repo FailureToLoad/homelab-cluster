@@ -41,7 +41,7 @@ spec:
         - name: ghcr-credentials
       containers:
         - name: datamonster
-          image: ghcr.io/failuretoload/datamonster-web:2025.12.19-32 # {"$imagepolicy": "flux-system:datamonster"}
+          image: ghcr.io/failuretoload/datamonster-web:2025.12.19-34 # {"$imagepolicy": "flux-system:datamonster"}
           env:
             - name: PORT
               value: "80"
