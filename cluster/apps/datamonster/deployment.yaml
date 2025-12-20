@@ -130,6 +130,8 @@ spec:
               value: "https://data-monster.net/auth/callback"
             - name: INTROSPECT_URL
               value: "https://auth.electriclantern.net/api/oidc/introspection"
+            - name: TOKEN_URL
+              value: "https://auth.electriclantern.net/api/oidc/token"
             - name: CLIENT_URL
               value: "https://data-monster.net"
             - name: VALKEY_ADDR
