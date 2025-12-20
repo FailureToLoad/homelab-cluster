@@ -42,11 +42,6 @@ spec:
       containers:
         - name: datamonster
           image: ghcr.io/failuretoload/datamonster-web:2025.12.20-39 # {"$imagepolicy": "flux-system:datamonster"}
-          env:
-            - name: PORT
-              value: "80"
-            - name: AUTH_DOMAIN
-              value: "https://auth.electriclantern.net"
           ports:
             - name: http
               containerPort: 80
@@ -59,13 +54,13 @@ spec:
               memory: 128Mi
           livenessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: http
             initialDelaySeconds: 5
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: http
             initialDelaySeconds: 3
             periodSeconds: 5
