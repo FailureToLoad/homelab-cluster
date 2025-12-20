@@ -45,10 +45,6 @@ spec:
           env:
             - name: PORT
               value: "80"
-            - name: API_URL
-              value: "http://datamonster-api:8080"
-            - name: API_HOST
-              value: "http://datamonster-api:8080"
             - name: AUTH_DOMAIN
               value: "https://auth.electriclantern.net"
           ports:
