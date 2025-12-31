@@ -49,3 +49,26 @@ spec:
   policy:
     numerical:
       order: asc
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: glossary
+  namespace: flux-system
+spec:
+  image: ghcr.io/failuretoload/glossary
+  interval: 5m
+  secretRef:
+    name: ghcr-credentials
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: glossary
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: glossary
+  policy:
+    semver:
+      range: ">=0.0.0"
