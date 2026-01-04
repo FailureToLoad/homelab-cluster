@@ -130,7 +130,7 @@ spec:
             - name: COOKIE_SECURE
               value: "true"
             - name: GLOSSARY_SERVER
-              value: "glossary.datamonster.svc.cluster.local"
+              value: "http://glossary.datamonster.svc.cluster.local"
             - name: DBSN
               valueFrom:
                 secretKeyRef:
@@ -200,7 +200,7 @@ spec:
         - name: ghcr-credentials
       containers:
         - name: glossary
-          image: ghcr.io/failuretoload/glossary:v0.2 # {"$imagepolicy": "flux-system:glossary"}
+          image: ghcr.io/failuretoload/glossary:v1.0 # {"$imagepolicy": "flux-system:glossary"}
           ports:
             - name: http
               containerPort: 80

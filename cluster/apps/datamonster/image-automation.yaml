@@ -69,6 +69,9 @@ metadata:
 spec:
   imageRepositoryRef:
     name: glossary
+  filterTags:
+    pattern: '^v(?P<major>\d+)\.(?P<minor>\d+)$'
+    extract: '$major.$minor'
   policy:
     semver:
-      range: ">=0.0.0"
+      range: ">=0.0"
